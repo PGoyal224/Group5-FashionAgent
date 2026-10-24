@@ -164,13 +164,10 @@ The repository root should contain **only** the course-specified top-level items
   - [ ] Save or view outfits
   - [ ] [Other feature]
 
-**Embed diagram here once created:**
 
-```markdown
-![Use case diagram](./assets/use-case-diagram.png)
-```
 
-> Replace the suggested path with the actual image location. The code block is an example, not an embedded image yet. Store assets within a course-approved repository folder.
+![Use case diagram](./Lab8Assets/group_5_use_case_diagram.png)
+
 
 ## 13. Wireframes
 
