@@ -5,15 +5,15 @@
 > **Lab Instructions:** https://cuboulder-csci3308.pages.dev/docs/labs/lab8  
 > **Project Guide:** https://cuboulder-csci3308.pages.dev/docs/project
 
-### 1. Team Number
+## 1. Team Number
 
 013-5
 
-### 2. Team Name
+## 2. Team Name
 
 Git Dressed 
 
-### 3. Team Members
+## 3. Team Members
 
 | Team Member | Email | Username |
 | --- | --- | --- |
@@ -24,13 +24,13 @@ Git Dressed
 | Aryan Choudhary | arch9012@colorado.edu | AryanFlick |
 
 
-### 4. Application Name
+## 4. Application Name
 
 Naxos
 
 Meaning: 
 
-### 5. Application Description
+## 5. Application Description
 
 > **Required:** Write **2–3 paragraphs** describing the application, its functionality, its value to users, and the planned scope. The prompts below are guidance, not finalized commitments.
 
@@ -55,7 +55,7 @@ Meaning:
 | [Create/save outfit] | [Decide] | [TBD] | [TBD] |
 | [Other feature] | [Decide] | [TBD] | [TBD] |
 
-### 6. Audience
+## 6. Audience
 
 - **Target audience:** [Who is the app for?]
 - **Ideal user characteristics:** [Wardrobe habits, goals, comfort with technology, etc.]
@@ -64,23 +64,22 @@ Meaning:
 - **Usability:** [How will navigation and workflows remain intuitive?]
 - **Accessibility:** [How will the design consider keyboard use, form labels, image descriptions, contrast, and readable text?]
 
-### 7. Vision Statement
+## 7. Vision Statement
 
 > **Required:** A clear, inspirational **1–2 sentence** vision statement.
 
 **Vision:**  
 [For **target users** who **have this need**, **application name** is a **digital wardrobe app** that **provides this key benefit**. Unlike **the current alternative**, it **provides this differentiator**.]
 
-### 8. Version Control
+## 8. Version Control
 
-- **Public GitHub repository URL:** [Paste link]
-- **Repository creator:** [Member]
-- **All team members added as collaborators:** [Yes / No]
-- **Public repository verified:** [Yes / No]
+- **Public GitHub repository URL:** https://github.com/PGoyal224/Group5-FashionAgent
+- **Repository creator:** Prisha Goyal
+
 
 ### Required Repository Structure
 
-The repository root should contain **only** the course-specified top-level items:
+
 
 ```text
 <repository-root>/
@@ -94,42 +93,16 @@ The repository root should contain **only** the course-specified top-level items
 └── ReadMe.md
 ```
 
-**Meeting log entries should capture:** decisions made; alternative actions/options discussed; follow-up items, including roles and responsibilities.
 
-**Architecture expectations to plan for:**
-- [ ] Graphical user interface (GUI)
-- [ ] Database
-- [ ] Middle layer connecting the UI and data
-- [ ] Docker containerization
-- [ ] Technology stack learned in CSCI 3308
-- [ ] Optional external API, only if useful and feasible
 
 ## 9. Development Methodology
 
-- **Approach:** [Agile / Scrum / Kanban / Hybrid]
-- **How work will be planned and assigned:** [TBD]
-- **Task tracking method:** [e.g., GitHub Projects board / GitHub issues]
-- **How often progress will be reviewed:** [TBD]
-- **How blockers and changes will be handled:** [TBD]
-- **How the team will coordinate GitHub work:** [TBD]
 
-**Four-week planning outline (optional):**
-
-| Period | Planned focus | Owner(s) |
-| --- | --- | --- |
-| Week 1 | [Scope, design, repository, initial setup] | [TBD] |
-| Week 2 | [Core functionality] | [TBD] |
-| Week 3 | [Integration and feature completion] | [TBD] |
-| Week 4 | [Testing, refinement, presentation] | [TBD] |
+To keep track of the work done over the next 4 weeks, we are using a Kanban Project Board on GitHub. The board can be found under the "Projects" tab in the repository, labeled "Team5-FashionAgentBoard."
 
 ## 10. Communication Plan
 
-> **Required:** Describe in **1–2 sentences** how the team will communicate. Identify an official collaboration tool for coordinating the project and communicating with the TA. The lab says **not** to use instant messages/text messages for this purpose.
-
-- **Primary collaboration tool:** [Slack / Discord / MS Teams / other]
-- **How team members will communicate and coordinate:** [Write 1–2 sentences]
-- **How TA communications will be handled:** [TBD]
-- **Optional issue-specific discussions:** [GitHub issue comments]
+The team will communicate via Slack for planning and collaboration purposes. Additionally, we will use the GitHub Project Board to mark who is doing which tasks and the status of those tasks. 
 
 ## 11. Meeting Plan
 
@@ -144,46 +117,25 @@ The repository root should contain **only** the course-specified top-level items
 
 - **Day:** Monday
 - **Time:** 6:00pm - 6:15pm
-- **Location or meeting link:** [TBD]
-- **Meeting minutes owner:** [TBD]
+- **Location or meeting link:** https://cuboulder.zoom.us/j/5481730913
+- **Meeting minutes owner:** Prisha Goyal
 - **Where minutes are stored:** `TeamMeetingLogs/`
 
 ## 12. Use Case Diagram
 
-> **Required:** Include a **high-level use case diagram showing at least 6 key application features** and how the application's users interact with them. Attach or embed the finalized diagram here.
-
-- **Diagram file or link:** [TBD]
-- **Primary actor(s):** [e.g., Digital Closet User — confirm with team]
-- **Features to consider (choose at least six that the app will actually support):**
-  - [ ] Add a clothing item
-  - [ ] View clothing inventory
-  - [ ] Categorize or filter clothing
-  - [ ] Edit clothing details
-  - [ ] Delete a clothing item
-  - [ ] Build an outfit
-  - [ ] Save or view outfits
-  - [ ] [Other feature]
 
 
 
-![Use case diagram](./Lab8Assets/group_5_use_case_diagram.png)
+<img src="./Lab8Assets/group_5_use_case_diagram.png" alt="Use Case Diagram" width="500">
 
 
 ## 13. Wireframes
 
-> **Required:** Provide a low-fidelity wireframe **for every planned application page**. Hand-drawn wireframes are acceptable. Add images or links below and adjust the list to match your agreed-upon application scope.
+### Guest Homepage
+<img src="./Lab8Assets/group_5_guest_homepage_wireframe.png" alt="Guest Homepage Wireframe" width="300">
 
-| Planned page | Main purpose | Wireframe image/link | Complete? |
-| --- | --- | --- | --- |
-| [Landing / Home] | [Entry point and navigation] | [TBD] | [ ] |
-| [Digital Closet] | [Browse saved clothing] | [TBD] | [ ] |
-| [Add / Edit Item] | [Create or update clothing entries] | [TBD] | [ ] |
-| [Outfit Builder] | [Combine pieces into outfits] | [TBD] | [ ] |
-| [Saved Outfits] | [View saved combinations] | [TBD] | [ ] |
-| AI Assistant | [Create new outfit combinations] | [TBD] | [ ] |
-| [Any additional page] | [Purpose] | [TBD] | [ ] |
-
-**For each wireframe, consider:** navigation; major content areas; inputs and controls; primary actions; how users move between pages; and basic accessibility.
+### User Homepage
+<img src="./Lab8Assets/group_5_user_homepage_wireframe.png" alt="User Homepage Wireframe" width="300">
 
 ---
 
