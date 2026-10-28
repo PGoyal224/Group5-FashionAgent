@@ -66,10 +66,7 @@ To make sure our application is accessible and effective, we plan to design a si
 
 ## 7. Vision Statement
 
-> **Required:** A clear, inspirational **1–2 sentence** vision statement.
-
-**Vision:**  
-[For **target users** who **have this need**, **application name** is a **digital wardrobe app** that **provides this key benefit**. Unlike **the current alternative**, it **provides this differentiator**.]
+For individuals who struggle with organizing their wardrobes and deciding what to wear, Naxos is a digital wardrobe management application that simplifies clothing organization and outfit planning while encouraging creativity and personal expression. Rather than relying on physical wardrobe organization or manually planning every outfit, Naxos provides a convenient platform for users to catalogue their clothing, create and save outfits, and discover new combinations using items they already own.
 
 ## 8. Version Control
 
