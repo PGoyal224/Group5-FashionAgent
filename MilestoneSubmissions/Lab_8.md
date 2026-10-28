@@ -44,13 +44,15 @@ With the prevalance of fast fashion, Naxos is different because it encourages us
 
 | Feature | MVP or stretch? | Owner | Notes |
 | --- | --- | --- | --- |
+| [User Registration] | [Decide] | [TBD] | [TBD] |
+| [User Login/Logout] | [Decide] | [TBD] | [TBD] |
 | [Add clothing item] | [Decide] | [TBD] | [TBD] |
 | [View digital closet] | [Decide] | [TBD] | [TBD] |
 | [Categorize/filter items] | [Decide] | [TBD] | [TBD] |
 | [Edit clothing item] | [Decide] | [TBD] | [TBD] |
 | [Delete clothing item] | [Decide] | [TBD] | [TBD] |
 | [Create/save outfit] | [Decide] | [TBD] | [TBD] |
-| [Other feature] | [Decide] | [TBD] | [TBD] |
+| [Generate outfit] | [Decide] | [TBD] | [TBD] |
 
 ## 6. Audience
 
@@ -156,7 +158,7 @@ Mitigation: We will prioritize essential functionality, including account creati
 ### 3) Database Design and Integration Issues
 Severity: High   
 Our application will require a database to store user accounts, clothing items, clothing attributes, and saved outfits. Poor database design or integration issues could cause problems when storing, retrieving, or updating this information.   
-Mitigation: We will plan our database schema before beginning implementation and establish clear relationships between users, clothing items, and outfits. We will also test database operations throughout development to identify issues early.
+Mitigation: We will plan our database schema before beginning implementation and establish clear relationships between users, clothing items, clothing tags, and outfits. We will also test database operations throughout development to identify issues early.
 
 ### 4) Clothing Image Upload and Storage
 Severity: Medium     
