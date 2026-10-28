@@ -108,23 +108,19 @@ The team will communicate via Slack for planning and collaboration purposes. Add
 
 ### Regular Team Meetings
 
-- **Day(s):** [TBD]
-- **Time(s) and time zone:** [TBD]
-- **Modality:** [In person / Zoom / Google Meet / hybrid]
-- **Location or meeting link:** [TBD]
+- **Day(s):** Tuesday, Thursday
+- **Time(s):** Indeterminate, depends on schedules
+- **Modality:** Group Video Calls
 
 ### Weekly TA Meetings
 
 - **Day:** Monday
 - **Time:** 6:00pm - 6:15pm
-- **Location or meeting link:** https://cuboulder.zoom.us/j/5481730913
+- **Meeting link:** https://cuboulder.zoom.us/j/5481730913
 - **Meeting minutes owner:** Prisha Goyal
 - **Where minutes are stored:** `TeamMeetingLogs/`
 
 ## 12. Use Case Diagram
-
-
-
 
 <img src="./Lab8Assets/group_5_use_case_diagram.png" alt="Use Case Diagram" width="500">
 
@@ -136,6 +132,18 @@ The team will communicate via Slack for planning and collaboration purposes. Add
 
 ### User Homepage
 <img src="./Lab8Assets/group_5_user_homepage_wireframe.png" alt="User Homepage Wireframe" width="300">
+
+### Clothing Inventory
+<img src="./Lab8Assets/group_5_my_Inventory_wireframe.png" alt="Clothing Inventory Wireframe" width="300">
+
+### Add Clothing Item
+<img src="./Lab8Assets/group_5_clothing_ item_wireframe.png" alt="Add Clothing Item Wireframe" width="300">
+
+### Saved Outfits 
+<img src="./Lab8Assets/group_5_my_outfits_wireframe.png" alt="Saved Outfits Wireframe" width="300">
+
+### Build Outfit
+<img src="./Lab8Assets/group_5_build _outfit_wireframe.png" alt="Build Outfit Wireframe" width="300">
 
 ---
 
