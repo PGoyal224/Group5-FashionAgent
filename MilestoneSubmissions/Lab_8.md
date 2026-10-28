@@ -141,10 +141,27 @@ The team will communicate via Slack for planning and collaboration purposes. Add
 
 ## Extra Credit — Project Risk Analysis
 
-| Risk | Severity (Low/Medium/High) | Mitigation strategy |
-| --- | --- | --- |
-| Risk 1 | [Low/Medium/High] | Solution 1 |
-| Risk 2 | [Low/Medium/High] | Solution 2 |
-| Risk 3 | [Low/Medium/High] | Solution 3 |
-| Risk 4 | [Low/Medium/High] | Solution 4 |
-| Risk 5 | [Low/Medium/High] | Solution 5 |
+### 1) Difficulty Implementing Outfit Generation
+Severity: High   
+We plan to add the ability to generate outfits based on user preferences. Implementing a system that consistently produces appropriate outfits may be more difficult than anticipated.   
+Mitigation: We could start off by implementing a basic outfit generation system that uses clothing categories and user-defined tags to select compatible items. If time permits, we can make the system far more complicated to include more factors and more adherence to user preferences. 
+
+### 2) Time Constraints and Project Scope
+Severity: High   
+If we underestimate the time required to implement all planned features, we could end up with an incomplete or half-baked application by the project deadline.   
+Mitigation: We will prioritize essential functionality, including account creation, clothing inventory management, and basic outfit generation. More advanced features and polish will be implemented only after the basic functionality is complete. We could also establish deadlines to monitor our progress.
+
+### 3) Database Design and Integration Issues
+Severity: High   
+Our application will require a database to store user accounts, clothing items, clothing attributes, and saved outfits. Poor database design or integration issues could cause problems when storing, retrieving, or updating this information.   
+Mitigation: We will plan our database schema before beginning implementation and establish clear relationships between users, clothing items, and outfits. We will also test database operations throughout development to identify issues early.
+
+### 4) Clothing Image Upload and Storage
+Severity: Medium     
+Users will need to upload images of their clothing items. Implementing image uploads and ensuring that images are stored and displayed correctly may introduce technical difficulties.  
+Mitigation: We will research and test image upload and storage methods early in development. We will also establish restrictions on supported file types and sizes to reduce potential compatibility and storage issues.  
+
+### 5) User Authentication and Data Security
+Severity: High     
+Our application will store user account information and personal clothing inventories. Security vulnerabilities could potentially allow unauthorized users to access or modify another user's information.   
+Mitigation: We will use established authentication methods, securely hash user passwords, and ensure that users can only access clothing items and outfits associated with their own accounts. We will also test authentication and authorization functionality before deployment.  
