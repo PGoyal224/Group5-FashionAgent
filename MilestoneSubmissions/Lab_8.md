@@ -28,7 +28,7 @@ Git Dressed
 
 Naxos
 
-Meaning: 
+Meaning: We based the name of our app off the Greek myth of Ariadne’s thread. Ariadne gave Theseus a magical ball of yarn to help him escape the labyrinth after he slayed the Minotaur. After his success in leaving the maze, he ultimately left Ariadne on the island of Naxos. Our app Naxos is where the users will find themselves after they have successfully navigated the maze of their closets and emerge with a new system of organization. 
 
 ## 5. Application Description
 
