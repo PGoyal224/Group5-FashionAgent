@@ -57,12 +57,12 @@ Meaning:
 
 ## 6. Audience
 
-- **Target audience:** [Who is the app for?]
-- **Ideal user characteristics:** [Wardrobe habits, goals, comfort with technology, etc.]
-- **User problem:** [What specific frustration does this app solve?]
-- **User benefit:** [What becomes easier or more convenient?]
-- **Usability:** [How will navigation and workflows remain intuitive?]
-- **Accessibility:** [How will the design consider keyboard use, form labels, image descriptions, contrast, and readable text?]
+
+Our target audience consists of people who want a more convenient way to organize their clothing and plan outfits. This includes people who have large wardrobes, struggle to decide what to wear, or want to experiment with different clothing combinations. Our ideal user is someone who regularly uses technology, owns a variety of clothing items, and wants to simplify the process of choosing outfits for different occasions, weather conditions, and personal styles.    
+     
+Our application aims to solve two problems: keeping track of clothing items and deciding what to wear. Users may forget about clothing they own, struggle to find combinations that work, or spend too much time planning outfits. Our application will address these problems by allowing users to catalogue their clothing and build outfits based on what they own.    
+    
+To make sure our application is accessible and effective, we plan to design a simple user interface with clearly labeled navigation, buttons, and forms. Users will be able to easily add clothing items, browse their inventory, and make outfits without needing extensive technical knowledge. Our goal is to make the application convenient and approachable for users with any level of technical experience. 
 
 ## 7. Vision Statement
 
