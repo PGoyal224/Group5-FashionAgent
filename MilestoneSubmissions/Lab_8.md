@@ -141,6 +141,9 @@ The team will communicate via Slack for planning and collaboration purposes. Add
 ### Build Outfit
 <img src="./Lab8Assets/group_5_build _outfit_wireframe.png" alt="Build Outfit Wireframe" width="300">
 
+### Registration Process
+<img src="./Lab8Assets/group_5_registration_process.png" alt="Registration Process Wireframe" width="1000">
+
 ---
 
 ## Extra Credit — Project Risk Analysis
