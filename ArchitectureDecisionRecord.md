@@ -1,4 +1,4 @@
-# Architecture Decision Record (ADR)
+# Architecture Decision Record
 
 This document serves as a centralized record of the architectural decisions made throughout the project. Each decision includes its context, rationale, and potential consequences to maintain consistency and provide transparency as the project evolves.
 
