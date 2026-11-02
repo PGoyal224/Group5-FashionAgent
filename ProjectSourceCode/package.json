@@ -1,0 +1,23 @@
+{
+  "name": "projectsourcecode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.3.0",
+    "express-handlebars": "^9.0.4",
+    "express-session": "^1.19.0",
+    "handlebars": "^4.7.10",
+    "pg-promise": "^12.7.1"
+  }
+}
