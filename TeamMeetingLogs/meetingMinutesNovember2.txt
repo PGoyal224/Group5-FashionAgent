@@ -1,5 +1,7 @@
 Group Contributions:
-Prisha: Set up project board for this week's deliverables, made user stories pertaining to account actions such as registration, user login, and logout. Created an architecture document detailing the team's architecture decisions and explained the decision of using Python for AI components of the application. Will work on building and adding acceptance criteria for the stories this week.
+Prisha: Set up project board for this week's deliverables, made user stories pertaining to account actions such as registration, user login, and logout. 
+Created an architecture document detailing the team's architecture decisions and explained the decision of using Python for AI components of the application. 
+Will work on building and adding acceptance criteria for the stories this week.
 Sofia: Helped organize epic structure, created user stories for outfit management, will add acceptance criteria this week.
 Jaden: Reworked folder structure, initiialzed Node JS, set up initial architecture such as Handlebars, partials, and files.
 Ethan: Created user stories for system setup components and edited gitignore file.
