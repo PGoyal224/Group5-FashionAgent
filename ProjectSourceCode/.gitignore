@@ -8,6 +8,7 @@ Thumbs.db
 .env.local
 .env.*.local
 *.pem
+.env.test
 
 # Log Files
 .docker/

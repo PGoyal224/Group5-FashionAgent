@@ -1,0 +1,1 @@
+<!-- Record setup commands, route contract, and cleanup behavior -->
