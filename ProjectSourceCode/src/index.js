@@ -69,7 +69,21 @@ app.post('/register', async (req, res) => {
             error: true
         });
     }
-    
+
+    // check length requirements for name and password
+    if (username.trim().length > 100) {
+        return res.render('pages/register', {
+            message: 'Username must be 100 characters or fewer.',
+            error: true
+        });
+    }
+
+    if (password.length < 8){
+        return res.render('pages/register', {
+            message: 'Password must be at least 8 characters long',
+            error: true
+        });
+    }
     
     try{
         // hash password using bcrypt
