@@ -7,6 +7,7 @@ const handlebars = require('express-handlebars');
 const path = require('path');
 const pgp = require('pg-promise')();
 const app = express();
+const bcrypt = require('bcryptjs');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -39,6 +40,9 @@ const dbConfig = {
 
 const db = pgp(dbConfig);
 
+// Allow Express to read the username and password through req.body
+app.use(express.urlencoded({ extended: true }));
+
 
 // *****************************************************
 // Section 4: Routes
@@ -46,6 +50,71 @@ const db = pgp(dbConfig);
 
 app.get('/', (req, res) => {
     res.render('pages/home');
+});
+
+// Register GET route
+app.get('/register', (req, res) => {
+    res.render('pages/register');
+});
+
+// Register POST route
+app.post('/register', async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    // check for missing fields
+    if (!username || !password || !username.trim() || !password.trim()) {
+        return res.redner('pages/register', {
+            message: 'Please fill out all fields.',
+            error: true
+        });
+    }
+
+    // check length requirements for name and password
+    if (username.trim().length > 100) {
+        return res.render('pages/register', {
+            message: 'Username must be 100 characters or fewer.',
+            error: true
+        });
+    }
+
+    if (password.length < 8){
+        return res.render('pages/register', {
+            message: 'Password must be at least 8 characters long',
+            error: true
+        });
+    }
+    
+    try{
+        // hash password using bcrypt
+        const hash = await bcrypt.hash(req.body.password, 10);
+
+        // insert username and hashed password into users table
+        const query = `INSERT INTO users (username, password) VALUES ($1, $2)`;
+
+        await db.none(query, [req.body.username, hash]);
+
+        // redirect after success
+        res.render('pages/register', {
+            message: 'Account created successfully!',
+            error: false
+        });
+    } catch (error) {
+        console.log(error);
+        
+        if (error.code === '23505'){
+            // PostgreSQL unique constraint violation
+            res.render('pages/register', {
+                message: 'That username is already taken',
+                error: true
+            });
+        } else {
+            res.status(500).render('pages/register', {
+                message: 'Something went wrong, please try again',
+                error: true
+            });
+        }
+    }
 });
 
 
