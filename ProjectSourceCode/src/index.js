@@ -52,6 +52,30 @@ app.get('/', (req, res) => {
     res.render('pages/home');
 });
 
+// Register GET route
+app.get('/register', (req, res) => {
+    res.render('pages/register');
+});
+
+// Register POST route
+app.post('/register', async (req, res) => {
+    try{
+        // hash password using bcrypt
+        const hash = await bcrypt.hash(req.body.password, 10);
+
+        // insert username and hashed password into users table
+        const query = `INSERT INTO users (username, password) VALUES ($1, $2)`;
+
+        await db.none(query, [req.body.username, hash]);
+
+        // redirect after success
+        res.redirect('/');
+    } catch (error) {
+        console.log(error);
+        res.redirect('/register');
+    }
+});
+
 
 // *****************************************************
 // Section 5: Start Server
