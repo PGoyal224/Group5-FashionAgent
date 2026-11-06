@@ -59,6 +59,18 @@ app.get('/register', (req, res) => {
 
 // Register POST route
 app.post('/register', async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    // check for missing fields
+    if (!username || !password || !username.trim() || !password.trim()) {
+        return res.redner('pages/register', {
+            message: 'Please fill out all fields.',
+            error: true
+        });
+    }
+    
+    
     try{
         // hash password using bcrypt
         const hash = await bcrypt.hash(req.body.password, 10);
@@ -69,10 +81,25 @@ app.post('/register', async (req, res) => {
         await db.none(query, [req.body.username, hash]);
 
         // redirect after success
-        res.redirect('/');
+        res.render('pages/register', {
+            message: 'Account created successfully!',
+            error: false
+        });
     } catch (error) {
         console.log(error);
-        res.redirect('/register');
+        
+        if (error.code === '23505'){
+            // PostgreSQL unique constraint violation
+            res.render('pages/register', {
+                message: 'That username is already taken',
+                error: true
+            });
+        } else {
+            res.status(500).render('pages/register', {
+                message: 'Something went wrong, please try again',
+                error: true
+            });
+        }
     }
 });
 
