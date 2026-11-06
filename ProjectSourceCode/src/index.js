@@ -7,6 +7,7 @@ const handlebars = require('express-handlebars');
 const path = require('path');
 const pgp = require('pg-promise')();
 const app = express();
+const bcrypt = require('bcryptjs');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -38,6 +39,9 @@ const dbConfig = {
 };
 
 const db = pgp(dbConfig);
+
+// Allow Express to read the username and password through req.body
+app.use(express.urlencoded({ extended: true }));
 
 
 // *****************************************************
