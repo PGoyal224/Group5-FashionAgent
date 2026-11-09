@@ -211,6 +211,14 @@ app.get('/dashboard', auth, (req, res) => {
 });
 
 
+// Logout: destroy the session so protected pages require a fresh login
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.render('pages/logout');
+    });
+});
+
+
 // *****************************************************
 // Section 5: Start Server
 // *****************************************************
