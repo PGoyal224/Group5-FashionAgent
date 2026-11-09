@@ -8,6 +8,7 @@ const path = require('path');
 const pgp = require('pg-promise')();
 const app = express();
 const bcrypt = require('bcryptjs');
+const session = require('express-session');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -43,6 +44,29 @@ const db = pgp(dbConfig);
 // Allow Express to read the username and password through req.body
 app.use(express.urlencoded({ extended: true }));
 
+// Sessions: keeps track of the logged-in user between requests.
+// SESSION_SECRET comes from the .env file (see .env.example).
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
+    saveUninitialized: false,
+    resave: false
+}));
+
+// Make the logged-in user (if any) available to every template as {{user}}
+app.use((req, res, next) => {
+    res.locals.user = req.session.user;
+    next();
+});
+
+// Route guard: redirect to /login when there is no user in the session.
+// Use on any route that shows password-protected information.
+const auth = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    next();
+};
+
 
 // *****************************************************
 // Section 4: Routes
@@ -71,7 +95,7 @@ app.post('/register', async (req, res) => {
 
     // check for missing fields
     if (!username || !password || !username.trim() || !password.trim()) {
-        return res.redner('pages/register', {
+        return res.render('pages/register', {
             message: 'Please fill out all fields.',
             error: true
         });
@@ -127,6 +151,9 @@ app.post('/register', async (req, res) => {
 
 // Login GET route
 app.get('/login', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/dashboard');
+    }
     res.render('pages/login');
 });
 
@@ -163,8 +190,11 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        // successful login -> home dashboard
-        res.redirect('/');
+        // successful login -> store the user in the session and go to the dashboard
+        req.session.user = { user_id: user.user_id, username: user.username };
+        req.session.save(() => {
+            res.redirect('/dashboard');
+        });
     } catch (error) {
         console.log(error);
         res.status(500).render('pages/login', {
@@ -172,6 +202,12 @@ app.post('/login', async (req, res) => {
             error: true
         });
     }
+});
+
+
+// Dashboard (requires login)
+app.get('/dashboard', auth, (req, res) => {
+    res.render('pages/dashboard', { username: req.session.user.username });
 });
 
 
