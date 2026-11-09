@@ -1,0 +1,36 @@
+<header class="d-flex justify-content-between align-items-center px-4 py-2 border-bottom">
+  <a href="/" class="text-decoration-none fw-bold fs-4">Naxos</a>
+
+  {{#if user}}
+    {{!-- Logout button (top right). Opens the "Confirm logout?" popup below. --}}
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+      Logout
+    </button>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Confirm logout?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            You will need to log in again to access your wardrobe and outfits.
+          </div>
+          <div class="modal-footer">
+            {{!-- Cancel just closes the popup and leaves the user on the current page --}}
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <form action="/logout" method="POST" class="m-0">
+              <button type="submit" class="btn btn-danger">Continue</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {{else}}
+    <nav>
+      <a href="/login" class="btn btn-outline-primary me-2">Login</a>
+      <a href="/register" class="btn btn-primary">Register</a>
+    </nav>
+  {{/if}}
+</header>
