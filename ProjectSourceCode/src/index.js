@@ -45,8 +45,17 @@ const db = pgp(dbConfig);
 // *****************************************************
 
 app.get('/', (req, res) => {
-    res.render('pages/home');
+    res.render('pages/dashboard');
 });
+
+app.post('/', (req, res) => {
+    res.render('pages/clothing');
+});
+
+app.post('/', (req, res) => {
+    res.render('pages/outfit');
+});
+
 
 
 // *****************************************************
