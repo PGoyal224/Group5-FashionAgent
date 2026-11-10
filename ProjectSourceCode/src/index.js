@@ -116,6 +116,13 @@ app.post('/register', async (req, res) => {
         });
     }
     
+    if (password !== req.body.confirmPassword){
+        return res.render('pages/register', {
+            message: 'Passwords do not match',
+            error: true
+        });
+    }
+
     try{
         // hash password using bcrypt
         const hash = await bcrypt.hash(req.body.password, 10);
