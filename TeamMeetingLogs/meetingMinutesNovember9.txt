@@ -1,1 +1,10 @@
+Group Contributions:
+Prisha: Worked on dashboard rendering and started working on a few routes that will be used for adding outfits and clothing items.
 
+Sofia: Was not present in the meeting.
+
+Jaden: Worked on getting the registration page working.
+
+Ethan: Built a general structure for the footer and dashboard page.
+
+Aryan: Set up login page and sessions.
