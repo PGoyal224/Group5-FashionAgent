@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Naxos favicon: navy-to-blue gradient tile with a gold N -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#081634"/>
+      <stop offset="0.5" stop-color="#10307a"/>
+      <stop offset="1" stop-color="#2a62d0"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <path d="M19 47 V17 L45 47 V17" fill="none" stroke="#f7c948" stroke-width="8" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>
