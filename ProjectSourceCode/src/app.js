@@ -9,6 +9,7 @@ const app = express();
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const db = require('./db');
+const validateRegistration = require('./validateRegistration');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -81,32 +82,15 @@ app.post('/register', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    // check for missing fields
-    if (!username || !password || !username.trim() || !password.trim()) {
-        return res.render('pages/register', {
-            message: 'Please fill out all fields.',
-            error: true
-        });
-    }
+    const validationError = validateRegistration(
+    username,
+    password,
+    req.body.confirmPassword
+    );
 
-    // check length requirements for name and password
-    if (username.trim().length > 100) {
+    if (validationError) {
         return res.render('pages/register', {
-            message: 'Username must be 100 characters or fewer.',
-            error: true
-        });
-    }
-
-    if (password.length < 8){
-        return res.render('pages/register', {
-            message: 'Password must be at least 8 characters long',
-            error: true
-        });
-    }
-    
-    if (password !== req.body.confirmPassword){
-        return res.render('pages/register', {
-            message: 'Passwords do not match',
+            message: validationError,
             error: true
         });
     }
