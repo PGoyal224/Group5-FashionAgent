@@ -5,10 +5,10 @@
 const express = require('express');
 const handlebars = require('express-handlebars');
 const path = require('path');
-const pgp = require('pg-promise')();
 const app = express();
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const db = require('./db');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -28,18 +28,6 @@ app.set('views', path.join(__dirname, 'views'));
 // Section 3: Database Configuration
 // *****************************************************
 
-// PostgreSQL database connection
-// Uses environment variables from the Docker Compose configuration
-
-const dbConfig = {
-    host: 'db',
-    port: 5432,
-    database: process.env.POSTGRES_DB,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD
-};
-
-const db = pgp(dbConfig);
 
 // Allow Express to read the username and password through req.body
 app.use(express.urlencoded({ extended: true }));
