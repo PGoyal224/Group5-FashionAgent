@@ -1,0 +1,41 @@
+<main class="container py-4">
+    <h1 class="text-center display-4">My Inventory</h1>
+
+    {{!-- Category filter: All | Tops | Bottoms | ... --}}
+    <nav class="nav nav-pills justify-content-center flex-wrap gap-1 my-3" aria-label="Filter by category">
+        {{#each filters}}
+            <a class="nav-link{{#if active}} active{{/if}}" href="{{href}}"{{#if active}} aria-current="page"{{/if}}>{{label}}</a>
+        {{/each}}
+    </nav>
+
+    {{> message}}
+
+    {{#if items.length}}
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+            {{#each items}}
+                <div class="col">
+                    <article class="card h-100 bg-light">
+                        {{#if image_url}}
+                            <img src="{{image_url}}" class="card-img-top object-fit-cover" style="aspect-ratio: 1;" alt="{{name}}">
+                        {{else}}
+                            {{!-- Placeholder until image upload is built --}}
+                            <div class="card-img-top bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
+                                No image
+                            </div>
+                        {{/if}}
+                        <div class="card-body text-center">
+                            <h2 class="card-title h6 mb-1">{{name}}</h2>
+                            <p class="card-text small text-muted text-capitalize mb-0">{{category}}{{#if style}} · {{style}}{{/if}}</p>
+                        </div>
+                    </article>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        {{#unless loadError}}
+            <p class="text-center text-muted my-5">
+                {{#if category}}You don't have any {{category}} in your inventory yet.{{else}}Your inventory is empty.{{/if}}
+            </p>
+        {{/unless}}
+    {{/if}}
+</main>
