@@ -190,6 +190,44 @@ app.get('/dashboard', auth, (req, res) => {
 });
 
 
+// Clothing categories (must match the CHECK constraint on clothing_items in create.sql)
+const CATEGORIES = ['tops', 'bottoms', 'dresses', 'shoes', 'accessories'];
+
+// Inventory: gallery of the logged-in user's clothing items (requires login).
+// Optional ?category=tops filters the gallery; unknown categories show everything.
+app.get('/inventory', auth, async (req, res) => {
+    const category = CATEGORIES.includes(req.query.category) ? req.query.category : null;
+
+    // category filter links, with the current one marked active
+    const filters = [{ label: 'All', href: '/inventory', active: !category }].concat(
+        CATEGORIES.map(c => ({
+            label: c.charAt(0).toUpperCase() + c.slice(1),
+            href: `/inventory?category=${c}`,
+            active: c === category
+        }))
+    );
+
+    try {
+        // only ever select items that belong to the logged-in user
+        const query = `SELECT item_id, name, category, style, image_url
+                       FROM clothing_items
+                       WHERE user_id = $1 AND ($2 IS NULL OR category = $2)
+                       ORDER BY created_at DESC, item_id DESC`;
+        const items = await db.any(query, [req.session.user.user_id, category]);
+
+        res.render('pages/inventory', { items, filters, category });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/inventory', {
+            filters,
+            loadError: true,
+            message: 'Could not load your inventory, please try again',
+            error: true
+        });
+    }
+});
+
+
 // Logout: destroy the session so protected pages require a fresh login
 app.post('/logout', (req, res) => {
     req.session.destroy(() => {
