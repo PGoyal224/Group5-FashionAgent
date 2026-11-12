@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha --timeout 10000 \"test/**/*.spec.js\""
+    "test": "mocha --require ./test/setup.js --timeout 10000 \"test/**/*.spec.js\""
   },
   "keywords": [],
   "author": "",

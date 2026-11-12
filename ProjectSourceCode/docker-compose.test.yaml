@@ -1,0 +1,13 @@
+services:
+  test-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: fashion_agent_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./src/init_data:/docker-entrypoint-initdb.d
+    tmpfs:
+      - /var/lib/postgresql/data
