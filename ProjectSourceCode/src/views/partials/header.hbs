@@ -10,26 +10,6 @@
       </button>
     </nav>
 
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="logoutModalLabel">Confirm logout?</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            You will need to log in again to access your wardrobe and outfits.
-          </div>
-          <div class="modal-footer">
-            {{!-- Cancel just closes the popup and leaves the user on the current page --}}
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <form action="/logout" method="POST" class="m-0">
-              <button type="submit" class="btn btn-danger">Continue</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
   {{else}}
     <nav>
       <a href="/login" class="btn btn-outline-primary me-2">Login</a>
@@ -37,3 +17,28 @@
     </nav>
   {{/if}}
 </header>
+
+{{#if user}}
+  {{!-- Logout confirmation modal. Kept outside <header> so sticky/filtered
+       headers (like the home page) don't trap the fixed-position dialog. --}}
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Confirm logout?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          You will need to log in again to access your wardrobe and outfits.
+        </div>
+        <div class="modal-footer">
+          {{!-- Cancel just closes the popup and leaves the user on the current page --}}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <form action="/logout" method="POST" class="m-0">
+            <button type="submit" class="btn btn-danger">Continue</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{{/if}}
