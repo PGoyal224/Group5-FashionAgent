@@ -34,6 +34,17 @@ describe('Login, Sessions, and Logout', () => {
             expect(res.text).to.include('name="username"');
             expect(res.text).to.include('name="password"');
         });
+
+        it('should redirect to the dashboard when already logged in', async () => {
+            const agent = chai.request.agent(app);
+            await agent.post('/login').type('form').send({ username, password });
+
+            const res = await agent.get('/login').redirects(0);
+
+            expect(res).to.have.status(302);
+            expect(res).to.redirectTo('/dashboard');
+            agent.close();
+        });
     });
 
     describe('POST /login', () => {
@@ -78,6 +89,27 @@ describe('Login, Sessions, and Logout', () => {
             expect(res).to.have.status(302);
             expect(res).to.redirectTo('/dashboard');
             expect(res).to.have.cookie('connect.sid');
+        });
+    });
+
+    describe('GET /dashboard', () => {
+        it('should redirect to login when signed out', async () => {
+            const res = await chai.request(app).get('/dashboard').redirects(0);
+
+            expect(res).to.have.status(302);
+            expect(res).to.redirectTo('/login');
+        });
+
+        it('should greet the logged-in user by name', async () => {
+            // agent keeps the session cookie between requests
+            const agent = chai.request.agent(app);
+            await agent.post('/login').type('form').send({ username, password });
+
+            const res = await agent.get('/dashboard');
+
+            expect(res).to.have.status(200);
+            expect(res.text).to.include(`Welcome to Naxos, ${username}!`);
+            agent.close();
         });
     });
 });
