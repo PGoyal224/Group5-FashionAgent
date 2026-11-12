@@ -30,6 +30,9 @@ app.set('views', path.join(__dirname, 'views'));
 // *****************************************************
 
 
+// Serve static files (css, js, img) from src/resources at /resources/...
+app.use('/resources', express.static(path.join(__dirname, 'resources')));
+
 // Allow Express to read the username and password through req.body
 app.use(express.urlencoded({ extended: true }));
 
