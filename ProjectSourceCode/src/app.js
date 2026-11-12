@@ -234,6 +234,9 @@ app.get('/inventory', auth, async (req, res) => {
 // Logout: destroy the session so protected pages require a fresh login
 app.post('/logout', (req, res) => {
     req.session.destroy(() => {
+        // res.locals.user was set earlier in this request; clear it so the
+        // logged-out page renders the signed-out header (Login / Register)
+        res.locals.user = null;
         res.render('pages/logout');
     });
 });

@@ -126,6 +126,10 @@ describe('Login, Sessions, and Logout', () => {
             expect(res).to.have.status(200);
             expect(res.text).to.include('You have successfully logged out');
 
+            // the logged-out page must show the signed-out header, not Logout
+            expect(res.text).to.include('href="/login"');
+            expect(res.text).to.not.include('id="logoutModal"');
+
             // the same cookie no longer grants access to protected pages
             const after = await agent.get('/dashboard').redirects(0);
             expect(after).to.have.status(302);
