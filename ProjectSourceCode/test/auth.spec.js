@@ -112,4 +112,34 @@ describe('Login, Sessions, and Logout', () => {
             agent.close();
         });
     });
+
+    describe('POST /logout', () => {
+        it('should show the logged-out page and end the session', async () => {
+            const agent = chai.request.agent(app);
+            await agent.post('/login').type('form').send({ username, password });
+
+            // sanity check: the session works before logging out
+            const before = await agent.get('/dashboard');
+            expect(before).to.have.status(200);
+
+            const res = await agent.post('/logout');
+            expect(res).to.have.status(200);
+            expect(res.text).to.include('You have successfully logged out');
+
+            // the same cookie no longer grants access to protected pages
+            const after = await agent.get('/dashboard').redirects(0);
+            expect(after).to.have.status(302);
+            expect(after).to.redirectTo('/login');
+            agent.close();
+        });
+    });
+
+    describe('GET /register?reason=nouser', () => {
+        it('should explain that no account was found', async () => {
+            const res = await chai.request(app).get('/register?reason=nouser');
+
+            expect(res).to.have.status(200);
+            expect(res.text).to.include('No account found with that username. Please create one.');
+        });
+    });
 });
