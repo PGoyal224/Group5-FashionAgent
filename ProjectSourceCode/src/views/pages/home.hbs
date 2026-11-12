@@ -1,13 +1,386 @@
-<h1 style="text-align: center; font-family: Arial, sans-serif; font-size: 36px; margin-top: 40px;">Welcome to Naxos!</h1>
-<p style="text-align: center; font-family: Arial, sans-serif; color: #555;">Your digital wardrobe and outfit planner.</p>
+{{!-- Home page redesign. Styles are inlined here so they apply to this page only. --}}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --ink-2: #6e6e73;
+    --ink-3: #86868b;
+    --line: #e2e2e2;
+    --blue: #0071e3;
+    --blue-hover: #0077ed;
+    --gold: #f7c948;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  }
+  body {
+    margin: 0;
+    background: #ffffff;
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* ---- header (this page only) ---- */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom: 1px solid rgba(0,0,0,.08) !important;
+    padding: 0 22px !important;
+    height: 52px;
+    font-family: var(--font);
+  }
+  header > a {
+    color: var(--ink) !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.03em;
+  }
+  header .btn {
+    border-radius: 980px;
+    padding: 7px 15px;
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    border: none;
+    transition: transform .2s cubic-bezier(.3,1.4,.5,1), background .2s;
+  }
+  header .btn:hover { transform: scale(1.03); }
+  header .btn-outline-primary { background: transparent; color: var(--ink); }
+  header .btn-outline-primary:hover { background: rgba(0,0,0,.05); color: var(--ink); }
+  header .btn-primary { background: var(--blue); color: #fff; }
+  header .btn-primary:hover { background: var(--blue-hover); }
+  header .btn-outline-danger { background: rgba(0,0,0,.05); color: var(--ink); }
+  header .btn-outline-danger:hover { background: var(--ink); color: #fff; }
 
-<section style="display: flex; flex-wrap: wrap; gap: 20px; max-width: 900px; margin: 32px auto; padding: 0 16px; font-family: Arial, sans-serif;">
-    <article style="flex: 1; min-width: 220px; padding: 24px; background-color: #d9d9d9; border-radius: 8px; text-align: center;">
-        <h2>Top Outfits</h2>
-        <p>Outfits will appear here.</p>
-    </article>
-    <article style="flex: 1; min-width: 220px; padding: 24px; background-color: #d9d9d9; border-radius: 8px; text-align: center;">
-        <h2>Top Clothing Items</h2>
-        <p>Clothing items will appear here.</p>
-    </article>
+  /* ---- hero ---- */
+  .nx-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(70% 55% at 85% 100%, rgba(255,215,106,.9) 0%, rgba(255,200,90,.55) 25%, rgba(255,180,80,0) 60%),
+      radial-gradient(60% 50% at 15% 105%, rgba(255,226,150,.8) 0%, rgba(255,226,150,0) 60%),
+      linear-gradient(180deg, #081634 0%, #10307a 22%, #2a62d0 48%, #6fa0ea 74%, #cfe0f8 100%);
+    color: #fff;
+  }
+  .nx-hero::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 300px;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.7) 60%, #fff 100%);
+    pointer-events: none;
+  }
+  .nx-hero-in {
+    position: relative; z-index: 2;
+    max-width: 1000px; margin: 0 auto;
+    padding: 120px 24px 0;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+  }
+  .nx-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 14px 7px 8px; border-radius: 999px;
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.38);
+    font-size: 14px; font-weight: 500;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .nx-badge b {
+    padding: 3px 9px; border-radius: 999px;
+    background: var(--gold); color: var(--ink);
+    font-weight: 700; font-size: 12px;
+  }
+  .nx-hero h1 {
+    margin: 0;
+    font-size: clamp(52px, 8.5vw, 124px);
+    line-height: 1.02; letter-spacing: -0.03em; font-weight: 600;
+    text-wrap: balance;
+    text-shadow: 0 2px 40px rgba(10,40,120,.3);
+  }
+  .nx-hero h1 span { color: rgba(255,255,255,.72); }
+  .nx-hero p {
+    margin: 0; max-width: 620px;
+    font-size: clamp(17px, 1.6vw, 20px); line-height: 1.5;
+    color: rgba(255,255,255,.94); text-wrap: pretty;
+    text-shadow: 0 1px 14px rgba(10,40,120,.25);
+  }
+  .nx-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding-top: 4px; }
+  .nx-btn {
+    display: inline-block; padding: 13px 24px; border-radius: 980px;
+    background: var(--blue); color: #fff; font-weight: 500; font-size: 17px;
+    text-decoration: none; box-shadow: 0 10px 30px rgba(0,60,160,.3);
+    transition: transform .25s cubic-bezier(.3,1.4,.5,1), background .2s;
+  }
+  .nx-btn:hover { transform: scale(1.03); background: var(--blue-hover); color: #fff; }
+  .nx-btn.ghost { background: transparent; box-shadow: none; color: #fff; padding: 13px 18px; }
+  .nx-btn.ghost:hover { background: rgba(255,255,255,.12); }
+
+  /* ---- wardrobe preview "window" ---- */
+  .nx-stage-wrap { position: relative; z-index: 2; max-width: 1120px; margin: 96px auto 0; padding: 0 24px 40px; }
+  .nx-stage {
+    border-radius: 28px; padding: clamp(18px, 3vw, 40px);
+    background:
+      radial-gradient(70% 55% at 88% 108%, #ffd76a 0%, rgba(255,200,90,.85) 22%, rgba(255,180,80,0) 62%),
+      conic-gradient(from 200deg at 60% 125%, #1f4fc9 0deg, #3d7bea 40deg, #8fb9f7 80deg, #f4c873 125deg, #f09a3e 150deg, #2c5fd6 200deg, #1f4fc9 360deg);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.6), 0 3px 8px rgba(20,50,110,.14), 0 40px 90px rgba(20,50,110,.38);
+  }
+  .nx-win {
+    background: #fff; border-radius: 18px; overflow: hidden; color: var(--ink);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.16), 0 6px 14px rgba(0,0,0,.1), 0 34px 80px rgba(0,0,0,.24);
+  }
+  .nx-bar {
+    height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px;
+    background: linear-gradient(180deg,#f8f8f8,#ececec); border-bottom: 1px solid #d8d8d8;
+  }
+  .nx-dot { width: 12px; height: 12px; border-radius: 50%; background: #d5d9e0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+  .nx-dot:nth-child(1) { background: #ff5f57; } .nx-dot:nth-child(2) { background: #febc2e; } .nx-dot:nth-child(3) { background: #28c840; }
+  .nx-bar span { margin-left: auto; margin-right: auto; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  .nx-win-body { display: grid; grid-template-columns: 200px 1fr; }
+  .nx-side { border-right: 1px solid var(--line); padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+  .nx-side a { padding: 8px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; }
+  .nx-side a.on { background: #eef4ff; color: #1d5fd8; font-weight: 600; }
+  .nx-main { padding: 22px 24px 28px; }
+  .nx-main-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .nx-main-head h3 { margin: 0; font-size: 22px; letter-spacing: -0.02em; font-weight: 600; }
+  .nx-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .nx-chips span { padding: 5px 11px; border-radius: 999px; background: #f3f3f3; font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+  .nx-chips span.on { background: var(--ink); color: #fff; }
+  .nx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+  .nx-item { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+  .nx-item .sw { aspect-ratio: 1; border-radius: 14px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+  .nx-item b { font-weight: 600; }
+  .nx-item small { color: var(--ink-3); font-size: 12px; }
+
+  /* ---- sections ---- */
+  .nx-section { max-width: 1180px; margin: 0 auto; padding: 80px 24px 40px; }
+  .nx-eyebrow { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: #1d5fd8; }
+  .nx-h2 {
+    margin: 10px 0 0; font-size: clamp(40px, 4.6vw, 64px);
+    line-height: 1.04; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance;
+  }
+  .nx-lede { margin: 18px 0 0; max-width: 640px; font-size: 19px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+  .nx-features {
+    margin-top: 48px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px;
+  }
+  .nx-card {
+    border-radius: 28px; background: #f5f5f7; padding: 30px 28px 32px;
+    display: flex; flex-direction: column; gap: 14px;
+    transition: transform .3s cubic-bezier(.3,1.3,.5,1);
+  }
+  .nx-card:hover { transform: translateY(-4px); }
+  .nx-card .ic {
+    width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  }
+  .nx-card .ic svg { width: 24px; height: 24px; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nx-card h3 { margin: 0; font-size: 22px; letter-spacing: -0.02em; font-weight: 600; }
+  .nx-card p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); }
+
+  /* ---- dark panel ---- */
+  .nx-dark-wrap { padding: 40px 24px; }
+  .nx-dark {
+    max-width: 1180px; margin: 0 auto; border-radius: 44px;
+    background: radial-gradient(120% 90% at 80% 0%, #1b2a4a 0%, #1d1d1f 60%);
+    color: #fff; padding: clamp(36px, 6vw, 80px);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 56px; align-items: center;
+    overflow: hidden;
+  }
+  .nx-dark .nx-eyebrow { color: var(--gold); }
+  .nx-dark .grad {
+    background: linear-gradient(100deg, #ffe8a3 0%, #f7c948 45%, #f0a020 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nx-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 22px 28px; padding-top: 8px; }
+  .nx-points div { display: flex; flex-direction: column; gap: 6px; }
+  .nx-points b { font-weight: 600; font-size: 16px; }
+  .nx-points span { font-size: 15px; line-height: 1.55; color: rgba(255,255,255,.7); }
+  .nx-outfit {
+    border-radius: 24px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+    padding: 22px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .nx-outfit .hd { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: rgba(255,255,255,.7); }
+  .nx-outfit .hd b { color: #fff; font-weight: 600; font-size: 16px; }
+  .nx-outfit .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .nx-outfit .row div { aspect-ratio: 1; border-radius: 16px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+  .nx-outfit .tag { align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: var(--gold); color: var(--ink); font-size: 12.5px; font-weight: 700; }
+
+  /* ---- CTA ---- */
+  .nx-cta-wrap { padding: 40px 24px 0; }
+  .nx-cta {
+    position: relative; max-width: 1180px; margin: 0 auto; border-radius: 44px; overflow: hidden;
+    background: linear-gradient(180deg, #081634 0%, #10307a 34%, #2a62d0 58%, #86a6e2 76%, #efd28e 92%, #f7c948 100%);
+    color: #fff; text-align: center; padding: clamp(60px, 9vw, 120px) 24px clamp(90px, 12vw, 160px);
+  }
+  .nx-cta::before {
+    content: ""; position: absolute; left: 50%; bottom: -300px; width: 1200px; height: 600px; margin-left: -600px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255,222,130,.8) 0%, rgba(247,201,72,.25) 35%, rgba(247,201,72,0) 65%);
+    pointer-events: none;
+  }
+  .nx-cta .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: nx-tw 3.4s infinite; }
+  .nx-cta > * { position: relative; }
+  .nx-cta h2 {
+    margin: 0; font-size: clamp(44px, 7vw, 96px);
+    line-height: 1.04; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance;
+  }
+  .nx-cta p { margin: 18px auto 0; max-width: 560px; font-size: 19px; line-height: 1.5; color: rgba(255,255,255,.85); }
+  .nx-cta .nx-actions { margin-top: 32px; }
+  .nx-cta .nx-btn { background: #fff; color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .nx-cta .nx-btn:hover { background: #fff; color: var(--ink); }
+  @keyframes nx-tw { 0%,100% { opacity: .15 } 50% { opacity: .9 } }
+
+  /* ---- footer (this page only) ---- */
+  footer { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  footer > p { display: none; }
+  .nx-foot {
+    max-width: 1180px; margin: 0 auto; padding: 56px 24px 40px;
+    display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+    font-size: 14px; color: var(--ink-3);
+  }
+  .nx-foot b { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; color: var(--ink); }
+  .nx-foot nav { display: flex; gap: 6px 24px; flex-wrap: wrap; font-size: 15px; font-weight: 500; }
+  .nx-foot nav a { color: var(--ink-2); text-decoration: none; padding: 10px 0; }
+  .nx-foot nav a:hover { color: var(--ink); }
+
+  @media (max-width: 760px) {
+    .nx-hero-in { padding-top: 84px; }
+    .nx-win-body { grid-template-columns: 1fr; }
+    .nx-side { display: none; }
+    .nx-stage-wrap { margin-top: 64px; }
+    .nx-section { padding: 56px 20px 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nx-cta .star, .nx-btn, .nx-card, header .btn { animation: none; transition: none; }
+  }
+</style>
+
+<section class="nx-hero">
+  <div class="nx-hero-in">
+    <span class="nx-badge"><b>New</b> A digital wardrobe for students</span>
+    <h1>Every outfit. <span>One closet away.</span></h1>
+    <p>Naxos keeps every piece you own in one place, builds outfits from what's already in your closet, and tags new items for you so your wardrobe stays organized without the work.</p>
+    <div class="nx-actions">
+      {{#if user}}
+        <a class="nx-btn" href="/dashboard">Open my wardrobe</a>
+      {{else}}
+        <a class="nx-btn" href="/register">Create your account</a>
+        <a class="nx-btn ghost" href="/login">Log in <span aria-hidden="true">›</span></a>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="nx-stage-wrap">
+    <div class="nx-stage">
+      <div class="nx-win" role="img" aria-label="Preview of the Naxos wardrobe gallery">
+        <div class="nx-bar"><i class="nx-dot"></i><i class="nx-dot"></i><i class="nx-dot"></i><span>Naxos · My Inventory</span></div>
+        <div class="nx-win-body">
+          <aside class="nx-side">
+            <a href="#" class="on" tabindex="-1">My Inventory</a>
+            <a href="#" tabindex="-1">My Outfits</a>
+            <a href="#" tabindex="-1">Build Outfit</a>
+            <a href="#" tabindex="-1">Add Item</a>
+          </aside>
+          <div class="nx-main">
+            <div class="nx-main-head">
+              <h3>My Inventory</h3>
+              <div class="nx-chips"><span class="on">All</span><span>Tops</span><span>Bottoms</span><span>Outerwear</span><span>Shoes</span></div>
+            </div>
+            <div class="nx-grid">
+              <div class="nx-item"><div class="sw" style="background:#2b4c8c"></div><b>Denim jacket</b><small>Outerwear · Blue</small></div>
+              <div class="nx-item"><div class="sw" style="background:#f4f1ea"></div><b>White tee</b><small>Tops · White</small></div>
+              <div class="nx-item"><div class="sw" style="background:#1d1d1f"></div><b>Black jeans</b><small>Bottoms · Black</small></div>
+              <div class="nx-item"><div class="sw" style="background:#c9a66b"></div><b>Camel coat</b><small>Outerwear · Tan</small></div>
+              <div class="nx-item"><div class="sw" style="background:#7a8b6f"></div><b>Olive chinos</b><small>Bottoms · Green</small></div>
+              <div class="nx-item"><div class="sw" style="background:#b8202a"></div><b>Red hoodie</b><small>Tops · Red</small></div>
+              <div class="nx-item"><div class="sw" style="background:#e9e9ec"></div><b>White sneakers</b><small>Shoes · White</small></div>
+              <div class="nx-item"><div class="sw" style="background:#5b6a84"></div><b>Grey knit</b><small>Tops · Grey</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
+
+<section class="nx-section" id="features">
+  <span class="nx-eyebrow">What you can do</span>
+  <h2 class="nx-h2">Your whole closet, finally in one place.</h2>
+  <p class="nx-lede">Add what you own, see it all at a glance, and put together outfits without pulling everything out of the drawer.</p>
+
+  <div class="nx-features">
+    <article class="nx-card">
+      <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+      <h3>Clothing gallery</h3>
+      <p>Every item you own with a photo, category, and color. Search by name or filter down to exactly what you're looking for.</p>
+    </article>
+    <article class="nx-card">
+      <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+      <h3>Outfit builder</h3>
+      <p>Pick pieces from your inventory, save them as an outfit, and come back to your favorites whenever you need them.</p>
+    </article>
+    <article class="nx-card">
+      <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div>
+      <h3>AI outfit ideas</h3>
+      <p>Stuck on what to wear? Naxos suggests complete outfits from the clothes already in your closet.</p>
+    </article>
+    <article class="nx-card">
+      <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg></div>
+      <h3>Auto tagging</h3>
+      <p>Upload a photo and Naxos fills in the category and color for you, so adding items takes seconds.</p>
+    </article>
+  </div>
+</section>
+
+<section class="nx-dark-wrap">
+  <div class="nx-dark">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <span class="nx-eyebrow">Built around your closet</span>
+      <h2 class="nx-h2" style="margin:0">Wear more of what you <span class="grad">already own.</span></h2>
+      <div class="nx-points">
+        <div><b>Nothing to buy</b><span>Naxos works with the clothes you have, not a store catalog.</span></div>
+        <div><b>Your account, your wardrobe</b><span>Items and outfits are tied to your login and stay private to you.</span></div>
+        <div><b>Fast to fill</b><span>Auto tagging means adding a full closet takes an afternoon, not a weekend.</span></div>
+        <div><b>Always with you</b><span>Open it on your phone in the morning or at the store before you buy a duplicate.</span></div>
+      </div>
+    </div>
+    <div class="nx-outfit" aria-label="Example saved outfit">
+      <div class="hd"><b>Campus Friday</b><span>4 items</span></div>
+      <div class="row">
+        <div style="background:#2b4c8c"></div>
+        <div style="background:#f4f1ea"></div>
+        <div style="background:#1d1d1f"></div>
+        <div style="background:#e9e9ec"></div>
+      </div>
+      <span class="tag">Suggested for you</span>
+    </div>
+  </div>
+</section>
+
+<section class="nx-cta-wrap">
+  <div class="nx-cta">
+    <i class="star" style="left:9%;top:34px"></i>
+    <i class="star" style="left:22%;top:90px;animation-delay:1s"></i>
+    <i class="star" style="left:41%;top:26px;width:3px;height:3px;animation-delay:.4s"></i>
+    <i class="star" style="left:58%;top:70px;animation-delay:2s"></i>
+    <i class="star" style="left:73%;top:40px;animation-delay:1.4s"></i>
+    <i class="star" style="left:90%;top:96px;width:3px;height:3px;animation-delay:.8s"></i>
+    <h2>Start your digital wardrobe.</h2>
+    <p>Free for students. Create an account, add a few pieces, and see your first outfit in minutes.</p>
+    <div class="nx-actions">
+      {{#if user}}
+        <a class="nx-btn" href="/dashboard">Go to my dashboard</a>
+      {{else}}
+        <a class="nx-btn" href="/register">Create your account</a>
+      {{/if}}
+    </div>
+  </div>
+</section>
+
+{{!-- Footer content for this page; the shared footer partial's placeholder text is hidden above. --}}
+<div class="nx-foot">
+  <b>Naxos</b>
+  <nav aria-label="Footer">
+    <a href="#features">Features</a>
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+  </nav>
+  <span>© 2026 Naxos</span>
+</div>
