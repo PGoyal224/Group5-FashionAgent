@@ -8,6 +8,10 @@
         {{/each}}
     </nav>
 
+    <div class="text-center mb-3">
+        <a href="/inventory/add" class="btn btn-primary">+ Add Clothing Item</a>
+    </div>
+
     {{> message}}
 
     {{#if items.length}}
@@ -15,17 +19,27 @@
             {{#each items}}
                 <div class="col">
                     <article class="card h-100 bg-light">
-                        {{#if image_url}}
-                            <img src="{{image_url}}" class="card-img-top object-fit-cover" style="aspect-ratio: 1;" alt="{{name}}">
+                        {{#if has_image}}
+                            <img src="/inventory/{{item_id}}/image" class="card-img-top object-fit-cover" style="aspect-ratio: 1;" alt="{{name}}" loading="lazy">
                         {{else}}
-                            {{!-- Placeholder until image upload is built --}}
                             <div class="card-img-top bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
                                 No image
                             </div>
                         {{/if}}
                         <div class="card-body text-center">
                             <h2 class="card-title h6 mb-1">{{name}}</h2>
+                            {{#if brand}}<p class="card-text small fw-semibold mb-1">{{brand}}</p>{{/if}}
                             <p class="card-text small text-muted text-capitalize mb-0">{{category}}{{#if style}} · {{style}}{{/if}}</p>
+                            {{#if swatches.length}}
+                                <ul class="list-unstyled d-flex justify-content-center flex-wrap gap-1 mt-2 mb-0" aria-label="Colors">
+                                    {{#each swatches}}
+                                        <li class="rounded-circle border" style="width: 14px; height: 14px; background: {{hex}};" title="{{value}}">
+                                            <span class="visually-hidden">{{value}}</span>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{/if}}
+                            {{#if price_paid}}<p class="card-text small mt-1 mb-0">Paid ${{price_paid}}</p>{{/if}}
                         </div>
                     </article>
                 </div>

@@ -1,0 +1,118 @@
+<main class="container py-4">
+    <h1 class="text-center display-4">Clothing Item</h1>
+    <p class="text-center text-muted">Add a new item to your inventory</p>
+
+    {{> message}}
+
+    {{!-- multipart/form-data is required for file uploads --}}
+    <form action="/inventory/add" method="POST" enctype="multipart/form-data">
+        <div class="row g-3">
+            {{!-- Clothing Photo --}}
+            <div class="col-md-6">
+                <section class="card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h2 class="h4">Clothing Photo</h2>
+                        <div class="mx-auto my-3 rounded border bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center overflow-hidden" style="max-width: 240px; aspect-ratio: 1;">
+                            <img id="imagePreview" class="w-100 h-100 object-fit-cover" alt="Preview of the selected photo" hidden>
+                            <span id="imagePlaceholder">No photo selected</span>
+                        </div>
+                        <label for="image" class="form-label">Upload Photo</label>
+                        <input type="file" class="form-control" id="image" name="image" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required aria-describedby="imageHelp">
+                        <div id="imageHelp" class="form-text">PNG or JPEG, up to 5 MB.</div>
+                    </div>
+                </section>
+            </div>
+
+            {{!-- Item details --}}
+            <div class="col-md-6">
+                <section class="card h-100 bg-light">
+                    <div class="card-body">
+                        <h2 class="h4 text-center">Details</h2>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{name}}" maxlength="100" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                {{#each categories}}
+                                    <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        {{!-- Colors: toggle as many as apply. Each is a checkbox named "colors". --}}
+                        <fieldset class="mb-3">
+                            <legend class="form-label fs-6 mb-2">Colors <span class="text-muted">(optional, choose all that apply)</span></legend>
+                            <div class="d-flex flex-wrap gap-2">
+                                {{#each colors}}
+                                    <input type="checkbox" class="btn-check" id="color-{{value}}" name="colors" value="{{value}}" autocomplete="off"{{#if checked}} checked{{/if}}>
+                                    <label class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 text-capitalize" for="color-{{value}}">
+                                        <span class="rounded-circle border" style="width: 14px; height: 14px; background: {{hex}};" aria-hidden="true"></span>
+                                        {{value}}
+                                    </label>
+                                {{/each}}
+                            </div>
+                        </fieldset>
+
+                        <div class="mb-3">
+                            <label for="style" class="form-label">Style <span class="text-muted">(optional)</span></label>
+                            <select class="form-select" id="style" name="style">
+                                <option value="">No style</option>
+                                {{#each styles}}
+                                    <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-7">
+                                <label for="brand" class="form-label">Brand <span class="text-muted">(optional)</span></label>
+                                <input type="text" class="form-control" id="brand" name="brand" value="{{brand}}" maxlength="100">
+                            </div>
+                            <div class="col-sm-5">
+                                <label for="price_paid" class="form-label">Price paid <span class="text-muted">(optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="price_paid" name="price_paid" value="{{price_paid}}" min="0" max="999999.99" step="0.01" inputmode="decimal" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        {{!-- Item Actions --}}
+        <div class="d-flex justify-content-center gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save Item</button>
+            <a href="/inventory" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+
+<script>
+    // Show a preview of the chosen photo before it is uploaded
+    document.getElementById('image').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('imagePlaceholder');
+
+        if (preview.src) {
+            URL.revokeObjectURL(preview.src);
+        }
+
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.hidden = false;
+            placeholder.hidden = true;
+        } else {
+            preview.removeAttribute('src');
+            preview.hidden = true;
+            placeholder.hidden = false;
+        }
+    });
+</script>
