@@ -54,3 +54,37 @@ CREATE TABLE IF NOT EXISTS outfits (
 -- for retreving a users saved outfits
     CREATE INDEX IF NOT EXISTS outfits_user_id_idx
     ON outfits(user_id);
+
+
+--outfit relationships to include the owner's ID.
+
+    CREATE UNIQUE INDEX IF NOT EXISTS outfits_id_user_id_idx
+    ON outfits(outfit_id, user_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS clothing_items_id_user_id_idx
+    ON clothing_items(item_id, user_id);
+
+
+
+-- Connect outfits to clothing items belonging to the same user.
+    CREATE TABLE IF NOT EXISTS outfit_items (
+    outfit_id INT NOT NULL,
+    item_id INT NOT NULL,
+    user_id INT NOT NULL,
+
+    PRIMARY KEY (outfit_id, item_id),
+
+    FOREIGN KEY (outfit_id, user_id)
+        REFERENCES outfits(outfit_id, user_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (item_id, user_id)
+        REFERENCES clothing_items(item_id, user_id)
+        ON DELETE CASCADE
+    );
+
+-- Helps find outfit relationships when a clothing item is deleted.
+
+CREATE INDEX IF NOT EXISTS outfit_items_item_id_idx
+    ON outfit_items(item_id);
+
