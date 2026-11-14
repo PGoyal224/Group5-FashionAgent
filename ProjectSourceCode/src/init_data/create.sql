@@ -37,3 +37,20 @@ CREATE TABLE IF NOT EXISTS clothing_item_colors (
                          'green', 'blue', 'navy', 'purple', 'pink', 'gold', 'silver')),
     PRIMARY KEY (item_id, color)
 );
+
+
+--saved outfits for users.
+
+CREATE TABLE IF NOT EXISTS outfits (
+    outfit_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL CHECK (LENGTH(TRIM(name)) > 0),
+    description TEXT,
+    weather VARCHAR(50),
+    occasion VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- for retreving a users saved outfits
+    CREATE INDEX IF NOT EXISTS outfits_user_id_idx
+    ON outfits(user_id);
