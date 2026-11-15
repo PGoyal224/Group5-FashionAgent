@@ -7,7 +7,15 @@ chai.use(chaiHttp);
 
 const app = require('../src/app');
 const db = require('../src/db');
+const fs = require('fs');
+const path = require('path');
 const { MAX_IMAGE_BYTES } = require('../src/validateClothingItem');
+
+// a real (tiny) photo in iPhone HEIC format
+const heicBytes = fs.readFileSync(path.join(__dirname, 'fixtures', 'sample.heic'));
+
+// the start of a WebP file, followed by some filler
+const webpBytes = Buffer.concat([Buffer.from('RIFF\x24\x00\x00\x00WEBPVP8 ', 'latin1'), Buffer.alloc(32, 1)]);
 
 // first bytes of a real PNG file, followed by some filler
 const pngBytes = Buffer.concat([
@@ -168,7 +176,74 @@ describe('Add Clothing Item', () => {
         expect(otherRes).to.have.status(404);
     });
 
-    it('should reject a file that is not a PNG or JPEG', async () => {
+    it('should save an item without a photo and show a placeholder', async () => {
+        const res = await ownerAgent
+            .post('/inventory/add')
+            .field('name', 'Quick Add Hoodie')
+            .field('category', 'outerwear');
+
+        expect(res).to.have.status(200);
+        expect(res.text).to.include('Item added to your inventory!');
+        expect(res.text).to.include('Quick Add Hoodie');
+        expect(res.text).to.include('No image');
+
+        const item = await db.one(
+            'SELECT image_data, image_type FROM clothing_items WHERE name = $1',
+            ['Quick Add Hoodie']
+        );
+        expect(item.image_data).to.equal(null);
+        expect(item.image_type).to.equal(null);
+    });
+
+    it('should convert an iPhone HEIC photo to JPEG', async () => {
+        await ownerAgent
+            .post('/inventory/add')
+            .field('name', 'HEIC Photo Item')
+            .field('category', 'tops')
+            .attach('image', heicBytes, 'IMG_0001.HEIC');
+
+        const item = await db.one(
+            'SELECT item_id, image_type FROM clothing_items WHERE name = $1',
+            ['HEIC Photo Item']
+        );
+        expect(item.image_type).to.equal('image/jpeg');
+
+        const res = await ownerAgent.get(`/inventory/${item.item_id}/image`).buffer(true);
+        expect(res).to.have.status(200);
+        expect(res).to.have.header('content-type', 'image/jpeg');
+        // JPEG files start with FF D8 FF
+        expect([...res.body.subarray(0, 3)]).to.deep.equal([0xff, 0xd8, 0xff]);
+    });
+
+    it('should save a WebP photo as is', async () => {
+        await ownerAgent
+            .post('/inventory/add')
+            .field('name', 'WebP Photo Item')
+            .field('category', 'tops')
+            .attach('image', webpBytes, 'photo.webp');
+
+        const item = await db.one(
+            'SELECT image_type FROM clothing_items WHERE name = $1',
+            ['WebP Photo Item']
+        );
+        expect(item.image_type).to.equal('image/webp');
+    });
+
+    it('should explain when a HEIC photo is damaged and cannot be converted', async () => {
+        // a real HEIC header followed by garbage
+        const brokenHeic = Buffer.concat([heicBytes.subarray(0, 40), Buffer.alloc(200, 7)]);
+        const res = await ownerAgent
+            .post('/inventory/add')
+            .field('name', 'Broken HEIC Item')
+            .field('category', 'tops')
+            .attach('image', brokenHeic, 'broken.heic');
+
+        expect(res).to.have.status(400);
+        expect(res.text).to.include('Could not read that photo.');
+        expect(await countItems('Broken HEIC Item')).to.equal(0);
+    });
+
+    it('should reject a file that is not a supported photo format', async () => {
         const res = await ownerAgent
             .post('/inventory/add')
             .field('name', 'Fake Photo Item')
@@ -176,7 +251,7 @@ describe('Add Clothing Item', () => {
             .attach('image', Buffer.from('not really an image'), 'fake.png');
 
         expect(res).to.have.status(400);
-        expect(res.text).to.include('Photo must be a PNG or JPEG file.');
+        expect(res.text).to.include('Photo must be a PNG, JPEG, WebP, or HEIC file.');
         // the form keeps what the user typed
         expect(res.text).to.include('value="Fake Photo Item"');
         expect(await countItems('Fake Photo Item')).to.equal(0);
