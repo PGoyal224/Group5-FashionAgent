@@ -201,6 +201,13 @@ app.get('/dashboard', auth, (req, res) => {
     res.render('pages/dashboard', { username: req.session.user.username });
 });
 
+// account page (requires login)
+app.get('/account', auth, (req, res) => {
+    res.render('pages/account', {
+        username: req.session.user.username
+    });
+});
+
 
 // <option>s for a dropdown, with the previously chosen one selected
 const selectOptions = (values, selected) => values.map(v => ({
