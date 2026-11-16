@@ -35,7 +35,7 @@ describe('Saved Outfits', () => {
         const insertUser = 'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING user_id';
         ownerId = await db.one(insertUser, [owner, hash], user => user.user_id);
         otherId = await db.one(insertUser, [otherUser, hash], user => user.user_id);
-        await db.none(insertUser, [emptyUser, hash]);
+        await db.one(insertUser, [emptyUser, hash]);
 
         ownerItemId = await db.one(
             `INSERT INTO clothing_items (user_id, name, category)
