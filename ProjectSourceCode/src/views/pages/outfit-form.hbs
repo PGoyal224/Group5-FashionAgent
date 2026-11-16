@@ -1,0 +1,72 @@
+<main class="container py-4">
+    <h1 class="text-center display-4">{{pageTitle}}</h1>
+    <p class="text-center text-muted">Choose pieces from your inventory and save your outfit.</p>
+
+    {{> message}}
+
+    <form action="{{formAction}}" method="POST">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <section class="card h-100 bg-light">
+                    <div class="card-body">
+                        <h2 class="h4">Outfit details</h2>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{name}}" maxlength="100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description <span class="text-muted">(optional)</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="4" maxlength="2000">{{description}}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="weather" class="form-label">Weather <span class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-control" id="weather" name="weather" value="{{weather}}" maxlength="50">
+                        </div>
+                        <div class="mb-3">
+                            <label for="occasion" class="form-label">Occasion <span class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-control" id="occasion" name="occasion" value="{{occasion}}" maxlength="100">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-md-7">
+                <section class="card h-100 bg-light">
+                    <div class="card-body">
+                        <h2 class="h4">Clothing items</h2>
+                        {{#if clothing.length}}
+                            <div class="row row-cols-2 row-cols-lg-3 g-2">
+                                {{#each clothing}}
+                                    <div class="col">
+                                        <label class="card h-100 p-2">
+                                            <input class="form-check-input" type="checkbox" name="item_ids" value="{{item_id}}"{{#if selected}} checked{{/if}}>
+                                            {{#if has_image}}
+                                                <img src="/inventory/{{item_id}}/image" class="img-fluid rounded object-fit-cover my-2" style="aspect-ratio: 1;" alt="" loading="lazy">
+                                            {{else}}
+                                                <span class="bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center rounded my-2" style="aspect-ratio: 1;">No image</span>
+                                            {{/if}}
+                                            <span class="fw-semibold">{{name}}</span>
+                                            <span class="small text-muted text-capitalize">{{category}}</span>
+                                        </label>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        {{else}}
+                            <p class="text-muted">Your inventory is empty. Add clothing items before building an outfit.</p>
+                            <a href="/inventory/add" class="btn btn-outline-primary">Add Clothing Item</a>
+                        {{/if}}
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">{{submitLabel}}</button>
+            {{#if isNew}}
+                <a href="/outfits" class="btn btn-outline-secondary">Cancel</a>
+            {{else}}
+                <a href="/outfits/{{outfit_id}}" class="btn btn-outline-secondary">Cancel</a>
+            {{/if}}
+        </div>
+    </form>
+</main>
