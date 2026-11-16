@@ -11,11 +11,17 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS clothing_items (
     item_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    -- generated from the colors and type (or category) every time the item is saved,
+    -- e.g. "Navy Socks" (see generateItemName in src/clothingOptions.js)
     name VARCHAR(100) NOT NULL,
     category VARCHAR(20) NOT NULL
         CHECK (category IN ('tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories')),
+    -- optional type within the category, e.g. 'blouse' for tops (lists in src/clothingOptions.js)
+    item_type VARCHAR(30),
     style VARCHAR(20)
         CHECK (style IN ('casual', 'formal', 'business', 'athletic', 'going out')),
+    -- optional descriptors typed by the user, e.g. "puff sleeves, cropped"
+    details VARCHAR(200),
     brand VARCHAR(100),
     -- what the user paid; exact decimal (not a float) so money adds up correctly
     price_paid NUMERIC(8, 2) CHECK (price_paid >= 0),
@@ -23,6 +29,8 @@ CREATE TABLE IF NOT EXISTS clothing_items (
     image_type VARCHAR(20)
         CHECK (image_type IN ('image/png', 'image/jpeg', 'image/webp')),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    -- set when the item is edited; also used to make browsers reload a replaced photo
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     -- an image and its type are always saved together
     CHECK ((image_data IS NULL) = (image_type IS NULL))
 );

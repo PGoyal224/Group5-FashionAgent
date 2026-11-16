@@ -18,7 +18,7 @@ const {
     toList,
     MAX_IMAGE_BYTES
 } = require('./validateClothingItem');
-const { CATEGORIES, COLORS, STYLES, optionLabel } = require('./clothingOptions');
+const { CATEGORIES, TYPES, COLORS, STYLES, optionLabel, generateItemName } = require('./clothingOptions');
 const preparePhoto = require('./preparePhoto');
 
 // *****************************************************
@@ -288,14 +288,28 @@ const parseOutfitId = value => {
     return id > 0 && id <= 2147483647 ? id : 0;
 };
 
-// everything the add item form needs; fields holds what the user entered, if anything
-const addItemForm = (fields = {}) => ({
-    name: fields.name,
+// Type <option>s for every category, so the form can switch the Type
+// dropdown when the category changes (see the script in item-form.hbs)
+const typeOptionsJson = JSON.stringify(
+    Object.fromEntries(CATEGORIES.map(c => [c, selectOptions(TYPES[c], null)]))
+);
+
+// Everything the add/edit item form needs.
+// fields holds what to fill in: what the user entered, or the saved item when editing.
+// item is the saved item when editing, or undefined when adding.
+const itemForm = (fields = {}, item) => ({
+    details: fields.details,
     brand: fields.brand,
     price_paid: fields.price_paid,
     categories: selectOptions(CATEGORIES, fields.category),
+    // types for the chosen category only; empty until a category is chosen
+    types: selectOptions(TYPES[fields.category] || [], fields.item_type),
+    typeOptionsJson,
     styles: selectOptions(STYLES, fields.style),
-    colors: colorOptions(toList(fields.colors))
+    colors: colorOptions(toList(fields.colors)),
+    editing: Boolean(item),
+    action: item ? `/inventory/${item.item_id}/edit` : '/inventory/add',
+    item
 });
 
 // Photo uploads: keep the file in memory so it can be checked, converted
@@ -305,37 +319,30 @@ const upload = multer({
     limits: { fileSize: MAX_IMAGE_BYTES, files: 1 }
 });
 
-// Add clothing item form (requires login)
-app.get('/inventory/add', auth, (req, res) => {
-    res.render('pages/add-item', addItemForm());
-});
-
-// Add clothing item: save the details and uploaded photo, then go back to the gallery
-app.post('/inventory/add', auth, (req, res) => {
+// Read a submitted add/edit item form, including its photo upload.
+// If anything is wrong, calls showError(fields, status, message) and returns null.
+// Otherwise returns the values ready to save.
+const readItemForm = (req, res, showError) => new Promise((resolve) => {
     // run the upload here (not as route middleware) so upload errors,
     // like a file that's too big, can be shown on the form
     upload.single('image')(req, res, async (uploadError) => {
         const fields = req.body || {};
-        const { name, category, style, brand, price_paid } = fields;
-
-        // re-show the form with the user's entries still filled in
-        const showError = (status, message) => res.status(status).render('pages/add-item', {
-            ...addItemForm(fields),
-            message,
-            error: true
-        });
+        const fail = (status, message) => {
+            showError(fields, status, message);
+            resolve(null);
+        };
 
         if (uploadError) {
             if (uploadError.code === 'LIMIT_FILE_SIZE') {
-                return showError(400, 'Photo must be 5 MB or smaller.');
+                return fail(400, 'Photo must be 5 MB or smaller.');
             }
             console.log(uploadError);
-            return showError(400, 'Could not read the upload, please try again.');
+            return fail(400, 'Could not read the upload, please try again.');
         }
 
         const validationError = validateClothingItem(fields, req.file);
         if (validationError) {
-            return showError(400, validationError);
+            return fail(400, validationError);
         }
 
         // get the photo (if any) ready to save, e.g. convert iPhone HEIC to JPEG
@@ -345,54 +352,249 @@ app.post('/inventory/add', auth, (req, res) => {
                 photo = await preparePhoto(req.file.buffer);
             } catch (error) {
                 console.log(error);
-                return showError(400, 'Could not read that photo. Try saving it as a JPEG and uploading it again.');
+                return fail(400, 'Could not read that photo. Try saving it as a JPEG and uploading it again.');
             }
         }
 
         // optional text fields are saved as NULL when left blank
         const optional = value => (value && value.trim() ? value.trim() : null);
 
-        try {
-            // save the item and its colors together: if either fails, neither is saved
-            await db.tx(async t => {
-                const itemQuery = `INSERT INTO clothing_items
-                                       (user_id, name, category, style, brand, price_paid, image_data, image_type)
-                                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                                   RETURNING item_id`;
-                const item = await t.one(itemQuery, [
-                    req.session.user.user_id,
-                    name.trim(),
-                    category,
-                    style || null,
-                    optional(brand),
-                    parsePrice(price_paid),
-                    photo ? photo.data : null,
-                    photo ? photo.type : null
-                ]);
+        const colors = toList(fields.colors);
 
-                // one row per color
-                for (const color of toList(fields.colors)) {
-                    await t.none(
-                        'INSERT INTO clothing_item_colors (item_id, color) VALUES ($1, $2)',
-                        [item.item_id, color]
-                    );
-                }
-            });
-
-            res.redirect('/inventory?added=1');
-        } catch (error) {
-            console.log(error);
-            showError(500, 'Something went wrong, please try again');
-        }
+        resolve({
+            fields,
+            name: generateItemName(fields.category, colors, fields.item_type),
+            category: fields.category,
+            item_type: fields.item_type || null,
+            style: fields.style || null,
+            details: optional(fields.details),
+            brand: optional(fields.brand),
+            price_paid: parsePrice(fields.price_paid),
+            colors,
+            photo,
+            // edit form only: the "Remove photo" checkbox
+            removePhoto: fields.remove_photo === 'on'
+        });
     });
+});
+
+// Replace an item's colors with a new list (inside a transaction t)
+const saveItemColors = async (t, itemId, colors) => {
+    await t.none('DELETE FROM clothing_item_colors WHERE item_id = $1', [itemId]);
+    // one row per color
+    for (const color of colors) {
+        await t.none(
+            'INSERT INTO clothing_item_colors (item_id, color) VALUES ($1, $2)',
+            [itemId, color]
+        );
+    }
+};
+
+// item_id from the URL, or null if it can't be a PostgreSQL INT
+const parseItemId = param => {
+    const itemId = /^\d{1,10}$/.test(param) ? Number(param) : 0;
+    return itemId >= 1 && itemId <= 2147483647 ? itemId : null;
+};
+
+// One of the logged-in user's items with its colors (not the photo itself)
+// and how many saved outfits use it, or null if it doesn't exist or belongs to someone else
+const findUserItem = async (itemId, userId) => {
+    const item = await db.oneOrNone(
+        `SELECT ci.item_id, ci.name, ci.category, ci.item_type, ci.style, ci.details, ci.brand, ci.price_paid,
+                (ci.image_data IS NOT NULL) AS has_image,
+                EXTRACT(EPOCH FROM ci.updated_at)::bigint AS version,
+                ARRAY(SELECT color FROM clothing_item_colors cc
+                      WHERE cc.item_id = ci.item_id) AS colors,
+                (SELECT COUNT(*)::int FROM outfit_items oi
+                 WHERE oi.item_id = ci.item_id) AS outfit_count
+         FROM clothing_items ci
+         WHERE ci.item_id = $1 AND ci.user_id = $2`,
+        [itemId, userId]
+    );
+    if (item) {
+        // for "1 saved outfit" vs "2 saved outfits" in the delete popup
+        item.in_one_outfit = item.outfit_count === 1;
+    }
+    return item;
+};
+
+// Add clothing item form (requires login)
+app.get('/inventory/add', auth, (req, res) => {
+    res.render('pages/item-form', itemForm());
+});
+
+// Add clothing item: save the details and uploaded photo, then go back to the gallery
+app.post('/inventory/add', auth, async (req, res) => {
+    // re-show the form with the user's entries still filled in
+    const showError = (fields, status, message) => res.status(status).render('pages/item-form', {
+        ...itemForm(fields),
+        message,
+        error: true
+    });
+
+    const values = await readItemForm(req, res, showError);
+    if (!values) {
+        return;
+    }
+
+    try {
+        // save the item and its colors together: if either fails, neither is saved
+        await db.tx(async t => {
+            const query = `INSERT INTO clothing_items
+                               (user_id, name, category, item_type, style, details, brand, price_paid, image_data, image_type)
+                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                           RETURNING item_id`;
+            const item = await t.one(query, [
+                req.session.user.user_id,
+                values.name,
+                values.category,
+                values.item_type,
+                values.style,
+                values.details,
+                values.brand,
+                values.price_paid,
+                values.photo ? values.photo.data : null,
+                values.photo ? values.photo.type : null
+            ]);
+
+            await saveItemColors(t, item.item_id, values.colors);
+        });
+
+        res.redirect('/inventory?added=1');
+    } catch (error) {
+        console.log(error);
+        showError(values.fields, 500, 'Something went wrong, please try again');
+    }
+});
+
+// Edit clothing item form, filled in with the saved item (requires login).
+// Only the item's owner can edit it; everyone else gets a 404.
+app.get('/inventory/:id/edit', auth, async (req, res) => {
+    const itemId = parseItemId(req.params.id);
+    if (!itemId) {
+        return res.sendStatus(404);
+    }
+
+    try {
+        const item = await findUserItem(itemId, req.session.user.user_id);
+        if (!item) {
+            return res.sendStatus(404);
+        }
+
+        res.render('pages/item-form', itemForm(item, item));
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+
+// Edit clothing item: save the changes, then go back to the gallery.
+// The photo is kept unless a new one is uploaded or "Remove photo" is checked.
+app.post('/inventory/:id/edit', auth, async (req, res) => {
+    const itemId = parseItemId(req.params.id);
+    if (!itemId) {
+        return res.sendStatus(404);
+    }
+
+    let item;
+    try {
+        // check ownership before reading the upload
+        item = await findUserItem(itemId, req.session.user.user_id);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+    if (!item) {
+        return res.sendStatus(404);
+    }
+
+    // re-show the form with the user's changes still filled in
+    const showError = (fields, status, message) => res.status(status).render('pages/item-form', {
+        ...itemForm(fields, item),
+        message,
+        error: true
+    });
+
+    const values = await readItemForm(req, res, showError);
+    if (!values) {
+        return;
+    }
+
+    // a new photo wins over "Remove photo"
+    const changePhoto = Boolean(values.photo) || values.removePhoto;
+
+    try {
+        // save the item and its colors together: if either fails, neither is saved
+        await db.tx(async t => {
+            const query = `UPDATE clothing_items
+                           SET name = $3, category = $4, item_type = $5, style = $6, details = $7,
+                               brand = $8, price_paid = $9,
+                               image_data = CASE WHEN $10 THEN $11 ELSE image_data END,
+                               image_type = CASE WHEN $10 THEN $12 ELSE image_type END,
+                               updated_at = NOW()
+                           WHERE item_id = $1 AND user_id = $2`;
+            await t.none(query, [
+                itemId,
+                req.session.user.user_id,
+                values.name,
+                values.category,
+                values.item_type,
+                values.style,
+                values.details,
+                values.brand,
+                values.price_paid,
+                changePhoto,
+                values.photo ? values.photo.data : null,
+                values.photo ? values.photo.type : null
+            ]);
+
+            await saveItemColors(t, itemId, values.colors);
+        });
+
+        res.redirect('/inventory?updated=1');
+    } catch (error) {
+        console.log(error);
+        showError(values.fields, 500, 'Something went wrong, please try again');
+    }
+});
+
+// Delete clothing item (requires login), then go back to the gallery.
+// Only the item's owner can delete it; everyone else gets a 404.
+// Its colors and its place in any saved outfits are removed with it (ON DELETE CASCADE).
+app.post('/inventory/:id/delete', auth, async (req, res) => {
+    const itemId = parseItemId(req.params.id);
+    if (!itemId) {
+        return res.sendStatus(404);
+    }
+
+    // only delete when the request comes from the confirmation popup.
+    // (req.body is undefined when a request has no form data at all)
+    if ((req.body || {}).confirm !== 'yes') {
+        return res.redirect(`/inventory/${itemId}/edit`);
+    }
+
+    try {
+        const deleted = await db.oneOrNone(
+            'DELETE FROM clothing_items WHERE item_id = $1 AND user_id = $2 RETURNING item_id',
+            [itemId, req.session.user.user_id]
+        );
+        if (!deleted) {
+            return res.sendStatus(404);
+        }
+
+        res.redirect('/inventory?deleted=1');
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
 });
 
 // Clothing item photo (requires login). Only the item's owner can see it;
 // everyone else gets a 404 so they can't tell which item ids exist.
+// Pages add ?v=<last updated time> so a replaced photo isn't shown from the browser cache.
 app.get('/inventory/:id/image', auth, async (req, res) => {
-    // item_id is a PostgreSQL INT, so anything else can't match
-    const itemId = /^\d{1,10}$/.test(req.params.id) ? Number(req.params.id) : 0;
-    if (itemId < 1 || itemId > 2147483647) {
+    const itemId = parseItemId(req.params.id);
+    if (!itemId) {
         return res.sendStatus(404);
     }
 
@@ -435,8 +637,9 @@ app.get('/inventory', auth, async (req, res) => {
     try {
         // only ever select items that belong to the logged-in user.
         // The photo itself is loaded separately by /inventory/:id/image.
-        const query = `SELECT ci.item_id, ci.name, ci.category, ci.style, ci.brand, ci.price_paid,
+        const query = `SELECT ci.item_id, ci.name, ci.category, ci.style, ci.details, ci.brand, ci.price_paid,
                               (ci.image_data IS NOT NULL) AS has_image,
+                              EXTRACT(EPOCH FROM ci.updated_at)::bigint AS version,
                               ARRAY(SELECT color FROM clothing_item_colors cc
                                     WHERE cc.item_id = ci.item_id) AS colors
                        FROM clothing_items ci
@@ -444,19 +647,27 @@ app.get('/inventory', auth, async (req, res) => {
                        ORDER BY ci.created_at DESC, ci.item_id DESC`;
         const items = await db.any(query, [req.session.user.user_id, category]);
 
-        // color swatches for each card, in the same order as the add item form
+        // color swatches for each card, in the same order as the item form
         items.forEach(item => {
             item.swatches = COLORS.filter(c => item.colors.includes(c.value));
         });
 
-        // /inventory/add redirects here with ?added=1 after saving an item
-        const added = req.query.added === '1';
+        // the add, edit, and delete routes redirect here with
+        // ?added=1, ?updated=1, or ?deleted=1 when they're done
+        let message = null;
+        if (req.query.added === '1') {
+            message = 'Item added to your inventory!';
+        } else if (req.query.updated === '1') {
+            message = 'Item updated!';
+        } else if (req.query.deleted === '1') {
+            message = 'Item deleted.';
+        }
 
         res.render('pages/inventory', {
             items,
             filters,
             category,
-            message: added ? 'Item added to your inventory!' : null,
+            message,
             error: false
         });
     } catch (error) {
