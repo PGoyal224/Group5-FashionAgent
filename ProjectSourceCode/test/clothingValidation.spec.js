@@ -35,10 +35,16 @@ describe('Clothing Item Validation', () => {
         expect(result).to.equal(null);
     });
 
-    it('should reject a missing name', () => {
-        const result = validateClothingItem({ name: '   ', category: 'tops' }, file(pngBytes));
+    it('should not need a name, since names are generated', () => {
+        const result = validateClothingItem({ category: 'tops' }, file(pngBytes));
 
-        expect(result).to.equal('Please enter a name for the item.');
+        expect(result).to.equal(null);
+    });
+
+    it('should reject details over 200 characters', () => {
+        const result = validateClothingItem({ category: 'tops', details: 'x'.repeat(201) }, file(pngBytes));
+
+        expect(result).to.equal('Details must be 200 characters or fewer.');
     });
 
     it('should reject an unknown category', () => {
@@ -123,6 +129,24 @@ describe('Clothing Item Validation', () => {
         const result = validateClothingItem({ name: 'Floral Shirt', category: 'tops', colors: ['white', 'chartreuse'] }, file(pngBytes));
 
         expect(result).to.equal('Please choose colors from the list.');
+    });
+
+    it('should accept a type that belongs to the category', () => {
+        const result = validateClothingItem({ category: 'shoes', item_type: 'socks' }, file(pngBytes));
+
+        expect(result).to.equal(null);
+    });
+
+    it('should reject a type from a different category', () => {
+        const result = validateClothingItem({ category: 'tops', item_type: 'socks' }, file(pngBytes));
+
+        expect(result).to.equal('Please choose a type that matches the category.');
+    });
+
+    it('should reject a type that is not in any list', () => {
+        const result = validateClothingItem({ category: 'tops', item_type: 'cape' }, file(pngBytes));
+
+        expect(result).to.equal('Please choose a type that matches the category.');
     });
 
     it('should reject a style that is not in the list', () => {

@@ -1,4 +1,4 @@
-const { CATEGORIES, COLOR_VALUES, STYLES } = require('./clothingOptions');
+const { CATEGORIES, TYPES, COLOR_VALUES, STYLES } = require('./clothingOptions');
 
 // Largest photo a user can upload: 5 MB
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -67,20 +67,17 @@ function toList(value) {
 // image is the file object from multer (req.file), or undefined if none was sent.
 // The photo is optional so items can be added quickly.
 function validateClothingItem(fields, image) {
-    const { name, category, style, brand, price_paid } = fields;
+    const { category, item_type, style, details, brand, price_paid } = fields;
     const colors = toList(fields.colors);
 
-    // Check required fields
-    if (!name || !name.trim()) {
-        return 'Please enter a name for the item.';
-    }
+    // Check required fields (the item's name is generated, see clothingOptions.js)
     if (!CATEGORIES.includes(category)) {
         return 'Please choose a category.';
     }
 
     // Check lengths (must match the column sizes in create.sql)
-    if (name.trim().length > 100) {
-        return 'Name must be 100 characters or fewer.';
+    if (details && details.trim().length > 200) {
+        return 'Details must be 200 characters or fewer.';
     }
     if (brand && brand.trim().length > 100) {
         return 'Brand must be 100 characters or fewer.';
@@ -89,6 +86,9 @@ function validateClothingItem(fields, image) {
     // Check choices come from the lists in clothingOptions.js
     if (!colors.every(c => COLOR_VALUES.includes(c))) {
         return 'Please choose colors from the list.';
+    }
+    if (item_type && !TYPES[category].includes(item_type)) {
+        return 'Please choose a type that matches the category.';
     }
     if (style && !STYLES.includes(style)) {
         return 'Please choose a style from the list.';

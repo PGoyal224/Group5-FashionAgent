@@ -1,0 +1,225 @@
+<main class="container py-4">
+    <h1 class="text-center display-4">Clothing Item</h1>
+    <p class="text-center text-muted">{{#if editing}}Editing: {{item.name}}{{else}}Add a new item to your inventory{{/if}}</p>
+
+    {{> message}}
+
+    {{!-- multipart/form-data is required for file uploads --}}
+    <form action="{{action}}" method="POST" enctype="multipart/form-data">
+        <div class="row g-3">
+            {{!-- Clothing Photo --}}
+            <div class="col-md-6">
+                <section class="card h-100 bg-light">
+                    <div class="card-body text-center">
+                        <h2 class="h4">Clothing Photo</h2>
+                        <div class="mx-auto my-3 rounded border bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center overflow-hidden" style="max-width: 240px; aspect-ratio: 1;">
+                            {{#if item.has_image}}
+                                {{!-- when editing, start by showing the item's current photo --}}
+                                <img id="imagePreview" class="w-100 h-100 object-fit-cover" alt="Photo of {{item.name}}{{#if item.details}}, {{item.details}}{{/if}}" src="/inventory/{{item.item_id}}/image?v={{item.version}}">
+                                <span id="imagePlaceholder" hidden>No photo selected</span>
+                            {{else}}
+                                <img id="imagePreview" class="w-100 h-100 object-fit-cover" alt="Preview of the selected photo" hidden>
+                                <span id="imagePlaceholder">No photo selected</span>
+                            {{/if}}
+                        </div>
+                        <label for="image" class="form-label">{{#if item.has_image}}Replace Photo{{else}}Upload Photo{{/if}} <span class="text-muted">(optional)</span></label>
+                        <input type="file" class="form-control" id="image" name="image" accept=".png,.jpg,.jpeg,.webp,.heic,.heif,image/png,image/jpeg,image/webp,image/heic,image/heif" aria-describedby="imageHelp">
+                        <div id="imageHelp" class="form-text">PNG, JPEG, WebP, or HEIC (iPhone), up to 5 MB.</div>
+                        {{#if item.has_image}}
+                            <div class="form-check d-inline-block mt-2">
+                                <input class="form-check-input" type="checkbox" id="remove_photo" name="remove_photo">
+                                <label class="form-check-label" for="remove_photo">Remove photo</label>
+                            </div>
+                        {{/if}}
+                    </div>
+                </section>
+            </div>
+
+            {{!-- Item details --}}
+            <div class="col-md-6">
+                <section class="card h-100 bg-light">
+                    <div class="card-body">
+                        <h2 class="h4 text-center">Item Info</h2>
+                        <p class="small text-muted text-center">The item's name is made from its colors and type, like "Navy Socks".</p>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                {{#each categories}}
+                                    <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        {{!-- Type: its choices depend on the category (switched by the script below) --}}
+                        <div class="mb-3">
+                            <label for="item_type" class="form-label">Type <span class="text-muted">(optional)</span></label>
+                            <select class="form-select" id="item_type" name="item_type">
+                                <option value="">No specific type</option>
+                                {{#each types}}
+                                    <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        {{!-- Colors: toggle as many as apply. Each is a checkbox named "colors". --}}
+                        <fieldset class="mb-3">
+                            <legend class="form-label fs-6 mb-2">Colors <span class="text-muted">(optional, choose all that apply)</span></legend>
+                            <div class="d-flex flex-wrap gap-2">
+                                {{#each colors}}
+                                    <input type="checkbox" class="btn-check" id="color-{{value}}" name="colors" value="{{value}}" autocomplete="off"{{#if checked}} checked{{/if}}>
+                                    <label class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 text-capitalize" for="color-{{value}}">
+                                        <span class="rounded-circle border" style="width: 14px; height: 14px; background: {{hex}};" aria-hidden="true"></span>
+                                        {{value}}
+                                    </label>
+                                {{/each}}
+                            </div>
+                        </fieldset>
+
+                        <div class="mb-3">
+                            <label for="style" class="form-label">Style <span class="text-muted">(optional)</span></label>
+                            <select class="form-select" id="style" name="style">
+                                <option value="">No style</option>
+                                {{#each styles}}
+                                    <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="details" class="form-label">Details <span class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-control" id="details" name="details" value="{{details}}" maxlength="200" placeholder="e.g. puff sleeves, cropped, wool blend">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-7">
+                                <label for="brand" class="form-label">Brand <span class="text-muted">(optional)</span></label>
+                                <input type="text" class="form-control" id="brand" name="brand" value="{{brand}}" maxlength="100">
+                            </div>
+                            <div class="col-sm-5">
+                                <label for="price_paid" class="form-label">Price paid <span class="text-muted">(optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="price_paid" name="price_paid" value="{{price_paid}}" min="0" max="999999.99" step="0.01" inputmode="decimal" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        {{!-- Item Actions --}}
+        <div class="d-flex justify-content-center gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save Item</button>
+            <a href="/inventory" class="btn btn-outline-secondary">Cancel</a>
+            {{#if editing}}
+                {{!-- Opens the "Delete this item?" popup below; nothing is deleted yet --}}
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteItemModal">
+                    Delete
+                </button>
+            {{/if}}
+        </div>
+    </form>
+</main>
+
+{{#if editing}}
+    {{!-- Delete confirmation popup. Kept outside the edit form because forms can't be nested. --}}
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteItemModalLabel">Delete this item?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2"><strong>{{item.name}}</strong>{{#if item.details}} ({{item.details}}){{/if}} will be permanently removed from your inventory. This can't be undone.</p>
+                    {{#if item.outfit_count}}
+                        <p class="text-danger mb-0">
+                            It will also be removed from {{item.outfit_count}} saved {{#if item.in_one_outfit}}outfit{{else}}outfits{{/if}}.
+                        </p>
+                    {{/if}}
+                </div>
+                <div class="modal-footer">
+                    {{!-- Cancel just closes the popup and leaves the item as it is --}}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/inventory/{{item.item_id}}/delete" method="POST" class="m-0">
+                        {{!-- the server only deletes when the request comes from this confirm button --}}
+                        <input type="hidden" name="confirm" value="yes">
+                        <button type="submit" class="btn btn-danger">Delete Item</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+<script>
+    // Switch the Type choices to match the chosen category
+    const typeOptions = {{{typeOptionsJson}}};
+    const categorySelect = document.getElementById('category');
+    const typeSelect = document.getElementById('item_type');
+
+    categorySelect.addEventListener('change', () => {
+        typeSelect.length = 1; // keep only "No specific type"
+        (typeOptions[categorySelect.value] || []).forEach(option => {
+            typeSelect.add(new Option(option.label, option.value));
+        });
+    });
+
+    // Show a preview of the chosen photo before it is uploaded
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+    const removePhoto = document.getElementById('remove_photo');
+
+    // when editing, the item's current photo (if any) to go back to
+    const savedPhoto = preview.getAttribute('src');
+
+    // show savedPhoto, a newly chosen file, or the placeholder
+    const showPreview = (src) => {
+        const old = preview.getAttribute('src');
+        if (old && old.startsWith('blob:')) {
+            URL.revokeObjectURL(old);
+        }
+        if (src) {
+            preview.src = src;
+            preview.hidden = false;
+            placeholder.hidden = true;
+        } else {
+            preview.removeAttribute('src');
+            preview.hidden = true;
+            placeholder.textContent = 'No photo selected';
+            placeholder.hidden = false;
+        }
+    };
+
+    // Most browsers can't show HEIC photos; they still upload and are converted to JPEG
+    preview.addEventListener('error', () => {
+        if (preview.getAttribute('src')) {
+            preview.hidden = true;
+            placeholder.textContent = 'Preview not available for this photo, but it will still upload';
+            placeholder.hidden = false;
+        }
+    });
+
+    // a newly chosen file replaces the saved photo, so "Remove photo" no longer applies
+    document.getElementById('image').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (removePhoto) {
+            removePhoto.checked = false;
+            removePhoto.disabled = Boolean(file);
+        }
+        if (file) {
+            showPreview(URL.createObjectURL(file));
+        } else {
+            showPreview(savedPhoto);
+        }
+    });
+
+    if (removePhoto) {
+        removePhoto.addEventListener('change', () => {
+            showPreview(removePhoto.checked ? null : savedPhoto);
+        });
+    }
+</script>

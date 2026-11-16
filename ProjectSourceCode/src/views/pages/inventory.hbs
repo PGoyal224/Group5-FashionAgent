@@ -19,17 +19,25 @@
             {{#each items}}
                 <div class="col">
                     <article class="card h-100 bg-light">
-                        {{#if has_image}}
-                            <img src="/inventory/{{item_id}}/image" class="card-img-top object-fit-cover" style="aspect-ratio: 1;" alt="{{name}}" loading="lazy">
-                        {{else}}
-                            <div class="card-img-top bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
-                                No image
-                            </div>
-                        {{/if}}
+                        {{!-- photo with the Edit button overlaid in its top-left corner --}}
+                        <div class="position-relative px-2 pt-3">
+                            {{#if has_image}}
+                                <img src="/inventory/{{item_id}}/image?v={{version}}" class="d-block w-100 rounded object-fit-cover" style="aspect-ratio: 1;" alt="{{name}}{{#if details}}, {{details}}{{/if}}" loading="lazy">
+                            {{else}}
+                                <div class="rounded bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
+                                    No image
+                                </div>
+                            {{/if}}
+                            <a href="/inventory/{{item_id}}/edit" class="btn btn-sm btn-light border shadow-sm position-absolute" style="top: 1.5rem; left: 1rem;">
+                                Edit<span class="visually-hidden"> {{name}}</span>
+                            </a>
+                        </div>
                         <div class="card-body text-center">
-                            <h2 class="card-title h6 mb-1">{{name}}</h2>
-                            {{#if brand}}<p class="card-text small fw-semibold mb-1">{{brand}}</p>{{/if}}
-                            <p class="card-text small text-muted text-capitalize mb-0">{{category}}{{#if style}} · {{style}}{{/if}}</p>
+                            {{!-- the user's own details are the card title; the generated name
+                                 (e.g. "Navy Socks") is only shown when there are no details --}}
+                            <h2 class="card-title fs-6 fw-normal mb-1">{{#if details}}{{details}}{{else}}{{name}}{{/if}}</h2>
+                            {{#if brand}}<p class="card-text small text-muted mb-0">{{brand}}{{#if style}} · <span class="text-capitalize">{{style}}</span>{{/if}}</p>
+                            {{else if style}}<p class="card-text small text-muted text-capitalize mb-0">{{style}}</p>{{/if}}
                             {{#if swatches.length}}
                                 <ul class="list-unstyled d-flex justify-content-center flex-wrap gap-1 mt-2 mb-0" aria-label="Colors">
                                     {{#each swatches}}
