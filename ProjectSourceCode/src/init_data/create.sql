@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS clothing_items (
     price_paid NUMERIC(8, 2) CHECK (price_paid >= 0),
     image_data BYTEA,
     image_type VARCHAR(20)
-        CHECK (image_type IN ('image/png', 'image/jpeg')),
+        CHECK (image_type IN ('image/png', 'image/jpeg', 'image/webp')),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     -- an image and its type are always saved together
     CHECK ((image_data IS NULL) = (image_type IS NULL))

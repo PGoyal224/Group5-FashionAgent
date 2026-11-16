@@ -13,12 +13,13 @@ const validateRegistration = require('./validateRegistration');
 const multer = require('multer');
 const {
     validateClothingItem,
-    detectImageType,
+    hasPhoto,
     parsePrice,
     toList,
     MAX_IMAGE_BYTES
 } = require('./validateClothingItem');
 const { CATEGORIES, COLORS, STYLES, optionLabel } = require('./clothingOptions');
+const preparePhoto = require('./preparePhoto');
 
 // *****************************************************
 // Section 2: Configure Handlebars
@@ -232,8 +233,8 @@ const addItemForm = (fields = {}) => ({
     colors: colorOptions(toList(fields.colors))
 });
 
-// Photo uploads: keep the file in memory so it can be checked and then
-// saved to the clothing_items table. Rejects anything over 5 MB.
+// Photo uploads: keep the file in memory so it can be checked, converted
+// if needed, and saved to the clothing_items table. Rejects anything over 5 MB.
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: MAX_IMAGE_BYTES, files: 1 }
@@ -272,6 +273,17 @@ app.post('/inventory/add', auth, (req, res) => {
             return showError(400, validationError);
         }
 
+        // get the photo (if any) ready to save, e.g. convert iPhone HEIC to JPEG
+        let photo = null;
+        if (hasPhoto(req.file)) {
+            try {
+                photo = await preparePhoto(req.file.buffer);
+            } catch (error) {
+                console.log(error);
+                return showError(400, 'Could not read that photo. Try saving it as a JPEG and uploading it again.');
+            }
+        }
+
         // optional text fields are saved as NULL when left blank
         const optional = value => (value && value.trim() ? value.trim() : null);
 
@@ -289,8 +301,8 @@ app.post('/inventory/add', auth, (req, res) => {
                     style || null,
                     optional(brand),
                     parsePrice(price_paid),
-                    req.file.buffer,
-                    detectImageType(req.file.buffer)
+                    photo ? photo.data : null,
+                    photo ? photo.type : null
                 ]);
 
                 // one row per color

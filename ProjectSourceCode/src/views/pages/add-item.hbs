@@ -16,9 +16,9 @@
                             <img id="imagePreview" class="w-100 h-100 object-fit-cover" alt="Preview of the selected photo" hidden>
                             <span id="imagePlaceholder">No photo selected</span>
                         </div>
-                        <label for="image" class="form-label">Upload Photo</label>
-                        <input type="file" class="form-control" id="image" name="image" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required aria-describedby="imageHelp">
-                        <div id="imageHelp" class="form-text">PNG or JPEG, up to 5 MB.</div>
+                        <label for="image" class="form-label">Upload Photo <span class="text-muted">(optional)</span></label>
+                        <input type="file" class="form-control" id="image" name="image" accept=".png,.jpg,.jpeg,.webp,.heic,.heif,image/png,image/jpeg,image/webp,image/heic,image/heif" aria-describedby="imageHelp">
+                        <div id="imageHelp" class="form-text">PNG, JPEG, WebP, or HEIC (iPhone), up to 5 MB.</div>
                     </div>
                 </section>
             </div>
@@ -96,10 +96,21 @@
 
 <script>
     // Show a preview of the chosen photo before it is uploaded
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+
+    // Most browsers can't show HEIC photos; they still upload and are converted to JPEG
+    preview.addEventListener('error', () => {
+        if (preview.getAttribute('src')) {
+            preview.hidden = true;
+            placeholder.textContent = 'Preview not available for this photo, but it will still upload';
+            placeholder.hidden = false;
+        }
+    });
+
     document.getElementById('image').addEventListener('change', (event) => {
         const file = event.target.files[0];
-        const preview = document.getElementById('imagePreview');
-        const placeholder = document.getElementById('imagePlaceholder');
+        placeholder.textContent = 'No photo selected';
 
         if (preview.src) {
             URL.revokeObjectURL(preview.src);

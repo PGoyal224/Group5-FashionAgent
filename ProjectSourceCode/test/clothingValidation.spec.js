@@ -5,6 +5,7 @@ const expect = chai.expect;
 const {
     validateClothingItem,
     detectImageType,
+    hasPhoto,
     parsePrice,
     toList,
     MAX_IMAGE_BYTES
@@ -13,6 +14,8 @@ const {
 // first bytes of real PNG and JPEG files
 const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
 const jpegBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
+const webpBytes = Buffer.from('RIFF\x24\x00\x00\x00WEBPVP8 ', 'latin1');
+const heicBytes = Buffer.from('\x00\x00\x00\x18ftypheic\x00\x00\x00\x00', 'latin1');
 
 // shaped like the file object multer puts on req.file
 const file = buffer => ({ buffer, size: buffer.length });
@@ -44,10 +47,18 @@ describe('Clothing Item Validation', () => {
         expect(result).to.equal('Please choose a category.');
     });
 
-    it('should reject a missing photo', () => {
-        const result = validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, undefined);
+    it('should accept an item without a photo', () => {
+        const noFile = validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, undefined);
+        // what browsers send when the photo input is left blank
+        const emptyFile = validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, file(Buffer.alloc(0)));
 
-        expect(result).to.equal('Please choose a photo to upload.');
+        expect(noFile).to.equal(null);
+        expect(emptyFile).to.equal(null);
+    });
+
+    it('should accept WebP and HEIC photos', () => {
+        expect(validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, file(webpBytes))).to.equal(null);
+        expect(validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, file(heicBytes))).to.equal(null);
     });
 
     it('should reject a photo over 5 MB', () => {
@@ -60,7 +71,7 @@ describe('Clothing Item Validation', () => {
         const gif = Buffer.from('GIF89a', 'ascii');
         const result = validateClothingItem({ name: 'Blue T-shirt', category: 'tops' }, file(gif));
 
-        expect(result).to.equal('Photo must be a PNG or JPEG file.');
+        expect(result).to.equal('Photo must be a PNG, JPEG, WebP, or HEIC file.');
     });
 
     it('should accept an optional brand and price paid', () => {
@@ -126,10 +137,18 @@ describe('Clothing Item Validation', () => {
         expect(toList(['red', 'white', 'red'])).to.deep.equal(['red', 'white']);
     });
 
-    it('should detect PNG and JPEG files from their contents', () => {
+    it('should detect PNG, JPEG, WebP, and HEIC files from their contents', () => {
         expect(detectImageType(pngBytes)).to.equal('image/png');
         expect(detectImageType(jpegBytes)).to.equal('image/jpeg');
+        expect(detectImageType(webpBytes)).to.equal('image/webp');
+        expect(detectImageType(heicBytes)).to.equal('image/heic');
         expect(detectImageType(Buffer.from('hello'))).to.equal(null);
+    });
+
+    it('should treat a missing or empty file as no photo', () => {
+        expect(hasPhoto(undefined)).to.equal(false);
+        expect(hasPhoto(file(Buffer.alloc(0)))).to.equal(false);
+        expect(hasPhoto(file(pngBytes))).to.equal(true);
     });
 
 });
