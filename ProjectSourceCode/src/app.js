@@ -223,6 +223,64 @@ const colorOptions = selected => COLORS.map(c => ({
     checked: selected.includes(c.value)
 }));
 
+const parseOutfitItemIds = value => {
+    if (value === undefined) {
+        return [];
+    }
+
+    const values = Array.isArray(value) ? value : [value];
+    if (values.some(id => typeof id !== 'string' || !/^\d{1,10}$/.test(id))) {
+        return null;
+    }
+
+    const ids = [...new Set(values.map(Number))];
+    return ids.every(id => id > 0 && id <= 2147483647) ? ids : null;
+};
+
+const validateOutfitFields = fields => {
+    const { name, description, weather, occasion } = fields;
+    if (typeof name !== 'string' || !name.trim()) {
+        return 'Please enter an outfit name.';
+    }
+    if (name.trim().length > 100) {
+        return 'Outfit names must be 100 characters or fewer.';
+    }
+    if (description && (typeof description !== 'string' || description.length > 2000)) {
+        return 'Descriptions must be 2000 characters or fewer.';
+    }
+    if (weather && (typeof weather !== 'string' || weather.length > 50)) {
+        return 'Weather must be 50 characters or fewer.';
+    }
+    if (occasion && (typeof occasion !== 'string' || occasion.length > 100)) {
+        return 'Occasions must be 100 characters or fewer.';
+    }
+    return null;
+};
+
+const outfitFormView = async (userId, fields = {}, selectedIds = []) => {
+    const clothing = await db.any(
+        `SELECT item_id, name, category, (image_data IS NOT NULL) AS has_image
+         FROM clothing_items WHERE user_id = $1
+         ORDER BY created_at DESC, item_id DESC`,
+        [userId]
+    );
+    return {
+        ...fields,
+        clothing: clothing.map(item => ({
+            ...item,
+            selected: selectedIds.includes(item.item_id)
+        }))
+    };
+};
+
+const parseOutfitId = value => {
+    if (!/^\d{1,10}$/.test(value)) {
+        return 0;
+    }
+    const id = Number(value);
+    return id > 0 && id <= 2147483647 ? id : 0;
+};
+
 // Type <option>s for every category, so the form can switch the Type
 // dropdown when the category changes (see the script in item-form.hbs)
 const typeOptionsJson = JSON.stringify(
@@ -616,6 +674,334 @@ app.get('/inventory', auth, async (req, res) => {
     }
 });
 
+// Saved outfits (requires login). Every query is scoped to the signed-in user.
+app.get('/outfits', auth, async (req, res) => {
+    try {
+        const outfits = await db.any(
+            `SELECT o.outfit_id, o.name, COUNT(oi.item_id)::int AS item_count,
+                    preview.item_id AS preview_item_id,
+                    COALESCE(preview.has_image, false) AS preview_has_image
+             FROM outfits o
+             LEFT JOIN outfit_items oi ON oi.outfit_id = o.outfit_id AND oi.user_id = o.user_id
+             LEFT JOIN LATERAL (
+                 SELECT ci.item_id, (ci.image_data IS NOT NULL) AS has_image
+                 FROM outfit_items preview_link
+                 JOIN clothing_items ci
+                   ON ci.item_id = preview_link.item_id AND ci.user_id = preview_link.user_id
+                 WHERE preview_link.outfit_id = o.outfit_id AND preview_link.user_id = o.user_id
+                 ORDER BY ci.created_at DESC, ci.item_id DESC
+                 LIMIT 1
+             ) preview ON true
+             WHERE o.user_id = $1
+             GROUP BY o.outfit_id, preview.item_id, preview.has_image
+             ORDER BY o.created_at DESC, o.outfit_id DESC`,
+            [req.session.user.user_id]
+        );
+        const saved = req.query.saved === '1';
+        const deleted = req.query.deleted === '1';
+        res.render('pages/outfits', {
+            outfits,
+            message: saved ? 'Outfit saved!'
+                : deleted ? 'Outfit deleted.' : null,
+            error: false
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/outfits', {
+            outfits: [],
+            loadError: true,
+            message: 'Could not load your saved outfits, please try again.',
+            error: true
+        });
+    }
+});
+
+app.get('/outfits/new', auth, async (req, res) => {
+    try {
+        res.render('pages/outfit-form', {
+            ...(await outfitFormView(req.session.user.user_id)),
+            pageTitle: 'Build an Outfit',
+            formAction: '/outfits',
+            submitLabel: 'Save Outfit',
+            isNew: true
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/outfit-form', {
+            pageTitle: 'Build an Outfit',
+            formAction: '/outfits',
+            submitLabel: 'Save Outfit',
+            isNew: true,
+            clothing: [],
+            message: 'Could not load your clothing inventory, please try again.',
+            error: true
+        });
+    }
+});
+
+app.post('/outfits', auth, async (req, res) => {
+    const fields = req.body || {};
+    const selectedIds = parseOutfitItemIds(fields.item_ids);
+    const validationError = validateOutfitFields(fields)
+        || (selectedIds === null ? 'Please select valid clothing items.' : null);
+
+    const showError = async (status, message) => {
+        try {
+            res.status(status).render('pages/outfit-form', {
+                ...(await outfitFormView(req.session.user.user_id, fields, selectedIds || [])),
+                pageTitle: 'Build an Outfit',
+                formAction: '/outfits',
+                submitLabel: 'Save Outfit',
+                isNew: true,
+                message,
+                error: true
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).render('pages/outfit-form', {
+                pageTitle: 'Build an Outfit',
+                formAction: '/outfits',
+                submitLabel: 'Save Outfit',
+                isNew: true,
+                clothing: [],
+                message: 'Could not load your clothing inventory, please try again.',
+                error: true
+            });
+        }
+    };
+
+    if (validationError) {
+        return showError(400, validationError);
+    }
+
+    try {
+        const ownedItems = await db.any(
+            'SELECT item_id FROM clothing_items WHERE user_id = $1 AND item_id = ANY($2::int[])',
+            [req.session.user.user_id, selectedIds]
+        );
+        if (ownedItems.length !== selectedIds.length) {
+            return showError(400, 'You can only add clothing from your own inventory.');
+        }
+
+        const name = fields.name.trim();
+        await db.tx(async t => {
+            const outfit = await t.one(
+                `INSERT INTO outfits (user_id, name, description, weather, occasion)
+                 VALUES ($1, $2, $3, $4, $5) RETURNING outfit_id`,
+                [
+                    req.session.user.user_id,
+                    name,
+                    fields.description?.trim() || null,
+                    fields.weather?.trim() || null,
+                    fields.occasion?.trim() || null
+                ]
+            );
+            for (const itemId of selectedIds) {
+                await t.none(
+                    'INSERT INTO outfit_items (outfit_id, item_id, user_id) VALUES ($1, $2, $3)',
+                    [outfit.outfit_id, itemId, req.session.user.user_id]
+                );
+            }
+        });
+        res.redirect('/outfits?saved=1');
+    } catch (error) {
+        console.log(error);
+        return showError(500, 'Could not save your outfit, please try again.');
+    }
+});
+
+app.get('/outfits/:id', auth, async (req, res) => {
+    const outfitId = parseOutfitId(req.params.id);
+    if (!outfitId) {
+        return res.sendStatus(404);
+    }
+
+    try {
+        const outfit = await db.oneOrNone(
+            `SELECT outfit_id, name, description, weather, occasion
+             FROM outfits WHERE outfit_id = $1 AND user_id = $2`,
+            [outfitId, req.session.user.user_id]
+        );
+        if (!outfit) {
+            return res.sendStatus(404);
+        }
+        const clothing = await db.any(
+            `SELECT ci.item_id, ci.name, ci.category,
+                    (ci.image_data IS NOT NULL) AS has_image
+             FROM outfit_items oi
+             JOIN clothing_items ci ON ci.item_id = oi.item_id AND ci.user_id = oi.user_id
+             WHERE oi.outfit_id = $1 AND oi.user_id = $2
+             ORDER BY ci.created_at DESC, ci.item_id DESC`,
+            [outfitId, req.session.user.user_id]
+        );
+        res.render('pages/outfit-detail', { outfit, clothing });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/outfit-detail', {
+            outfit: null,
+            clothing: [],
+            message: 'Could not load this outfit, please try again.',
+            error: true
+        });
+    }
+});
+
+app.get('/outfits/:id/edit', auth, async (req, res) => {
+    const outfitId = parseOutfitId(req.params.id);
+    if (!outfitId) {
+        return res.sendStatus(404);
+    }
+
+    try {
+        const outfit = await db.oneOrNone(
+            `SELECT outfit_id, name, description, weather, occasion
+             FROM outfits WHERE outfit_id = $1 AND user_id = $2`,
+            [outfitId, req.session.user.user_id]
+        );
+        if (!outfit) {
+            return res.sendStatus(404);
+        }
+        const selected = await db.any(
+            'SELECT item_id FROM outfit_items WHERE outfit_id = $1 AND user_id = $2',
+            [outfitId, req.session.user.user_id]
+        );
+        res.render('pages/outfit-form', {
+            ...(await outfitFormView(
+                req.session.user.user_id,
+                outfit,
+                selected.map(item => item.item_id)
+            )),
+            pageTitle: 'Edit Outfit',
+            formAction: `/outfits/${outfitId}`,
+            submitLabel: 'Save Changes',
+            isNew: false
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/outfit-form', {
+            pageTitle: 'Edit Outfit',
+            formAction: `/outfits/${outfitId}`,
+            submitLabel: 'Save Changes',
+            isNew: false,
+            clothing: [],
+            message: 'Could not load this outfit, please try again.',
+            error: true
+        });
+    }
+});
+
+app.post('/outfits/:id', auth, async (req, res) => {
+    const outfitId = parseOutfitId(req.params.id);
+    if (!outfitId) {
+        return res.sendStatus(404);
+    }
+
+    const fields = req.body || {};
+    const selectedIds = parseOutfitItemIds(fields.item_ids);
+    const validationError = validateOutfitFields(fields)
+        || (selectedIds === null ? 'Please select valid clothing items.' : null);
+    const showError = async (status, message) => {
+        try {
+            res.status(status).render('pages/outfit-form', {
+                ...(await outfitFormView(req.session.user.user_id, fields, selectedIds || [])),
+                outfit_id: outfitId,
+                pageTitle: 'Edit Outfit',
+                formAction: `/outfits/${outfitId}`,
+                submitLabel: 'Save Changes',
+                isNew: false,
+                message,
+                error: true
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).render('pages/outfit-form', {
+                outfit_id: outfitId,
+                pageTitle: 'Edit Outfit',
+                formAction: `/outfits/${outfitId}`,
+                submitLabel: 'Save Changes',
+                isNew: false,
+                clothing: [],
+                message: 'Could not load this outfit, please try again.',
+                error: true
+            });
+        }
+    };
+    if (validationError) {
+        return showError(400, validationError);
+    }
+
+    try {
+        const ownedItems = await db.any(
+            'SELECT item_id FROM clothing_items WHERE user_id = $1 AND item_id = ANY($2::int[])',
+            [req.session.user.user_id, selectedIds]
+        );
+        if (ownedItems.length !== selectedIds.length) {
+            return showError(400, 'You can only add clothing from your own inventory.');
+        }
+
+        const result = await db.tx(async t => {
+            const updated = await t.result(
+                `UPDATE outfits SET name = $1, description = $2, weather = $3, occasion = $4
+                 WHERE outfit_id = $5 AND user_id = $6`,
+                [
+                    fields.name.trim(),
+                    fields.description?.trim() || null,
+                    fields.weather?.trim() || null,
+                    fields.occasion?.trim() || null,
+                    outfitId,
+                    req.session.user.user_id
+                ]
+            );
+            if (updated.rowCount === 0) {
+                return false;
+            }
+            await t.none(
+                'DELETE FROM outfit_items WHERE outfit_id = $1 AND user_id = $2',
+                [outfitId, req.session.user.user_id]
+            );
+            for (const itemId of selectedIds) {
+                await t.none(
+                    'INSERT INTO outfit_items (outfit_id, item_id, user_id) VALUES ($1, $2, $3)',
+                    [outfitId, itemId, req.session.user.user_id]
+                );
+            }
+            return true;
+        });
+        if (!result) {
+            return res.sendStatus(404);
+        }
+        res.redirect('/outfits?saved=1');
+    } catch (error) {
+        console.log(error);
+        return showError(500, 'Could not save your changes, please try again.');
+    }
+});
+
+app.post('/outfits/:id/delete', auth, async (req, res) => {
+    const outfitId = parseOutfitId(req.params.id);
+    if (!outfitId) {
+        return res.sendStatus(404);
+    }
+
+    try {
+        const result = await db.result(
+            'DELETE FROM outfits WHERE outfit_id = $1 AND user_id = $2',
+            [outfitId, req.session.user.user_id]
+        );
+        if (result.rowCount === 0) {
+            return res.sendStatus(404);
+        }
+        res.redirect('/outfits?deleted=1');
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('pages/outfits', {
+            outfits: [],
+            loadError: true,
+            message: 'Could not delete this outfit, please try again.',
+            error: true
+        });
+    }
+});
 
 // Logout: destroy the session so protected pages require a fresh login
 app.post('/logout', (req, res) => {

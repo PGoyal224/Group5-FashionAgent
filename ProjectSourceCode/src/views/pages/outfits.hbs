@@ -1,0 +1,47 @@
+<main class="container py-4">
+    <h1 class="text-center display-4">Saved Outfits</h1>
+
+    <div class="text-center my-3">
+        <a href="/outfits/new" class="btn btn-primary">+ Build Outfit</a>
+    </div>
+
+    {{> message}}
+
+    {{#if outfits.length}}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+            {{#each outfits}}
+                <div class="col">
+                    <article class="card h-100 bg-light">
+                        <a href="/outfits/{{outfit_id}}" class="text-decoration-none text-reset">
+                            {{#if preview_has_image}}
+                                <img src="/inventory/{{preview_item_id}}/image" class="card-img-top object-fit-cover" style="aspect-ratio: 1;" alt="Preview of {{name}}" loading="lazy">
+                            {{else}}
+                                <div class="card-img-top bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center" style="aspect-ratio: 1;">
+                                    Outfit preview
+                                </div>
+                            {{/if}}
+                        </a>
+                        <div class="card-body text-center">
+                            <h2 class="card-title h5"><a href="/outfits/{{outfit_id}}" class="text-decoration-none text-reset">{{name}}</a></h2>
+                            <p class="card-text small text-muted">{{item_count}} pieces</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="/outfits/{{outfit_id}}" class="btn btn-outline-primary btn-sm">View Outfit</a>
+                                <a href="/outfits/{{outfit_id}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                <form action="/outfits/{{outfit_id}}/delete" method="POST" class="m-0" onsubmit="return confirm('Delete this outfit? This cannot be undone.');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        {{#unless loadError}}
+            <section class="text-center text-muted my-5">
+                <p>You haven't saved any outfits yet.</p>
+                <a href="/outfits/new" class="btn btn-primary">Build Outfit</a>
+            </section>
+        {{/unless}}
+    {{/if}}
+</main>
