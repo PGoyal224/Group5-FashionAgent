@@ -1,6 +1,6 @@
 Team Updates:
-Prisha:
-Jaden:
-Sofia:
-Ethan:
-Aryan:
+Prisha: Created a saved outfits view page where user can view, add, edit, and delete outfits.
+Jaden: Made an account view page, this includes amount of outfits and clothing items saved.
+Sofia: Worked on clothing items feature, creating items, gallery view, add, edit, and delete for clothing cards.
+Ethan: Created tables, relationships, and tests for the database.
+Aryan: Was not present today.
