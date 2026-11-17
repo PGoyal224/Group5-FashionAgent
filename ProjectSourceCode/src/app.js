@@ -704,12 +704,11 @@ app.get('/outfits', auth, async (req, res) => {
              ORDER BY o.created_at DESC, o.outfit_id DESC`,
             [req.session.user.user_id]
         );
-        const saved = req.query.saved === '1';
-        const deleted = req.query.deleted === '1';
+        const message = req.session.outfitMessage || null;
+        delete req.session.outfitMessage;
         res.render('pages/outfits', {
             outfits,
-            message: saved ? 'Outfit saved!'
-                : deleted ? 'Outfit deleted.' : null,
+            message,
             error: false
         });
     } catch (error) {
@@ -810,7 +809,8 @@ app.post('/outfits', auth, async (req, res) => {
                 );
             }
         });
-        res.redirect('/outfits?saved=1');
+        req.session.outfitMessage = 'Outfit saved!';
+        res.redirect('/outfits');
     } catch (error) {
         console.log(error);
         return showError(500, 'Could not save your outfit, please try again.');
@@ -977,7 +977,8 @@ app.post('/outfits/:id', auth, async (req, res) => {
         if (!result) {
             return res.sendStatus(404);
         }
-        res.redirect('/outfits?saved=1');
+        req.session.outfitMessage = 'Outfit saved!';
+        res.redirect('/outfits');
     } catch (error) {
         console.log(error);
         return showError(500, 'Could not save your changes, please try again.');
@@ -998,7 +999,8 @@ app.post('/outfits/:id/delete', auth, async (req, res) => {
         if (result.rowCount === 0) {
             return res.sendStatus(404);
         }
-        res.redirect('/outfits?deleted=1');
+        req.session.outfitMessage = 'Outfit deleted.';
+        res.redirect('/outfits');
     } catch (error) {
         console.log(error);
         res.status(500).render('pages/outfits', {

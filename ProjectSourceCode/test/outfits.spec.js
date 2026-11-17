@@ -20,6 +20,7 @@ describe('Saved Outfits', () => {
     let otherId;
     let ownerItemId;
     let secondOwnerItemId;
+    let thirdOwnerItemId;
     let otherItemId;
     let ownerOutfitId;
     let otherOutfitId;
@@ -46,6 +47,12 @@ describe('Saved Outfits', () => {
         secondOwnerItemId = await db.one(
             `INSERT INTO clothing_items (user_id, name, category)
              VALUES ($1, 'Owner boots', 'shoes') RETURNING item_id`,
+            [ownerId],
+            item => item.item_id
+        );
+        thirdOwnerItemId = await db.one(
+            `INSERT INTO clothing_items (user_id, name, category)
+             VALUES ($1, 'Owner shirt', 'tops') RETURNING item_id`,
             [ownerId],
             item => item.item_id
         );
@@ -95,6 +102,7 @@ describe('Saved Outfits', () => {
 
         expect(res).to.have.status(200);
         expect(res.text).to.include('Weekend look');
+        expect(res.text).to.include('1 pieces');
         expect(res.text).to.include('Outfit preview');
         expect(res.text).to.not.include('Private look');
     });
@@ -112,14 +120,19 @@ describe('Saved Outfits', () => {
         const saveRes = await ownerAgent.post('/outfits').type('form').send({
             name: 'Dinner look',
             occasion: 'Dinner',
-            item_ids: [String(ownerItemId), String(secondOwnerItemId)]
+            item_ids: [String(ownerItemId), String(secondOwnerItemId), String(thirdOwnerItemId)]
         }).redirects(0);
 
         expect(saveRes).to.have.status(302);
-        expect(saveRes).to.redirectTo('/outfits?saved=1');
+        expect(saveRes).to.redirectTo('/outfits');
 
         const listRes = await ownerAgent.get('/outfits');
         expect(listRes.text).to.include('Dinner look');
+        expect(listRes.text).to.include('3 pieces');
+        expect(listRes.text).to.include('Outfit saved!');
+
+        const refreshedListRes = await ownerAgent.get('/outfits');
+        expect(refreshedListRes.text).to.not.include('Outfit saved!');
 
         const saved = await db.one(
             'SELECT outfit_id FROM outfits WHERE user_id = $1 AND name = $2',
@@ -129,7 +142,9 @@ describe('Saved Outfits', () => {
             'SELECT item_id FROM outfit_items WHERE outfit_id = $1 ORDER BY item_id',
             [saved.outfit_id]
         );
-        expect(savedItems.map(item => item.item_id)).to.have.members([ownerItemId, secondOwnerItemId]);
+        expect(savedItems.map(item => item.item_id)).to.have.members([
+            ownerItemId, secondOwnerItemId, thirdOwnerItemId
+        ]);
     });
 
     it('rejects adding another user’s clothing item', async () => {
@@ -153,6 +168,7 @@ describe('Saved Outfits', () => {
         }).redirects(0);
 
         expect(res).to.have.status(302);
+        expect(res).to.redirectTo('/outfits');
         const outfit = await db.one('SELECT name FROM outfits WHERE outfit_id = $1', [ownerOutfitId]);
         const items = await db.any('SELECT item_id FROM outfit_items WHERE outfit_id = $1', [ownerOutfitId]);
         expect(outfit.name).to.equal('Updated weekend look');
@@ -163,7 +179,11 @@ describe('Saved Outfits', () => {
         const deleteRes = await ownerAgent.post(`/outfits/${ownerOutfitId}/delete`).redirects(0);
 
         expect(deleteRes).to.have.status(302);
-        expect(deleteRes).to.redirectTo('/outfits?deleted=1');
+        expect(deleteRes).to.redirectTo('/outfits');
+        const ownerListRes = await ownerAgent.get('/outfits');
+        expect(ownerListRes.text).to.include('Outfit deleted.');
+        expect((await ownerAgent.get('/outfits')).text).to.not.include('Outfit deleted.');
+
         const emptyRes = await emptyAgent.get('/outfits');
         expect(emptyRes).to.have.status(200);
         expect(emptyRes.text).to.include("You haven't saved any outfits yet.");
