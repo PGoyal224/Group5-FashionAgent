@@ -26,3 +26,4 @@ web_stage/
 .idea/
 *.suo
 *.ntvs*
+init_db.sh
