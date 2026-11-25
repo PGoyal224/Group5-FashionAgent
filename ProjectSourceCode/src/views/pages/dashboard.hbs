@@ -1,2 +1,27 @@
-<h1>Welcome to Naxos{{#if username}}, {{username}}{{/if}}!</h1>
-<p>Your digital wardrobe and outfit planner.</p>
+<div class="container mt-4">
+    <h1>Welcome to Naxos{{#if username}}, {{username}}{{/if}}!</h1>
+    <p>Your digital wardrobe and outfit planner.</p>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Inventory</h5>
+                    <p class="card-text">You currently have {{clothingCount}} clothing items saved.</p>
+                    <a href="/inventory" class="card-link">View Inventory</a>
+                    <a href="/inventory/add" class="card-link">Add Clothing Item</a>
+                </div>
+            </div>            
+        </div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Saved Outfits</h5>
+                    <p class="card-text">You currently have {{outfitCount}} outfits saved.</p>
+                    <a href="/outfits" class="card-link">View Outfits</a>
+                    <a href="/outfits/new" class="card-link">Build Outfit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

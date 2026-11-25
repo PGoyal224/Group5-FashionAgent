@@ -198,8 +198,17 @@ app.post('/login', async (req, res) => {
 
 
 // Dashboard (requires login)
-app.get('/dashboard', auth, (req, res) => {
-    res.render('pages/dashboard', { username: req.session.user.username });
+app.get('/dashboard', auth, async (req, res) => {
+    const user_id = req.session.user.user_id;
+
+    const clothingCount = await db.one(`SELECT COUNT(*) FROM clothing_items WHERE user_id = $1`, [user_id]);
+    const outfitCount = await db.one(`SELECT COUNT(*) FROM outfits WHERE user_id = $1`, [user_id]);
+
+    res.render('pages/dashboard', {
+        username: req.session.user.username,
+        clothingCount: clothingCount.count,
+        outfitCount: outfitCount.count
+    });
 });
 
 // account page (requires login)
