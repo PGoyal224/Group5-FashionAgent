@@ -25,14 +25,102 @@ With the prevalance of fast fashion, Naxos is different because it encourages us
 
 <!-- 3. Technology Stack used for the project -->
 
+### Technology Stack
+
+- Node.js and Express for the web server
+- Handlebars and Bootstrap for the website pages
+- PostgreSQL for users, clothing items, and outfits
+- Docker Compose for running the app locally
+- Mocha, Chai, and Chai HTTP for automated tests
+- Render for hosting the deployed website
+
+
 
 <!-- 4. Prerequisites to run the application -->
 
+### Prerequisites
+
+- Git
+- Node.js and npm
+- Docker Desktop with Docker Compose
+
+Docker Desktop must be running before starting the containers.
+
+
 
 <!-- 5. Instructions on how to run the application locally -->
+
+### Running Locally
+
+1. Clone the repository and open the application folder:
+
+   ```sh
+   git clone https://github.com/PGoyal224/Group5-FashionAgent.git
+   cd Group5-FashionAgent/ProjectSourceCode
+   ```
+
+2. Create your local environment file:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+   In `.env`, replace the example database password and session secret
+   with your own values. Keep this file private and do not commit it.
+
+3. Install the dependencies:
+
+   ```sh
+   npm install
+   ```
+
+4. Start the database and website:
+
+   ```sh
+   docker compose up -d
+   ```
+
+5. Open [localhost:3000](http://localhost:3000) in your browser.
+
+The database tables are created automatically when the database starts
+with an empty data volume.
+
+To view server logs:
+
+```sh
+docker compose logs --tail=50 web
+```
+
+To stop the website and database:
+
+```sh
+docker compose down
+```
+
+The normal database uses persistent storage, so stopping the containers
+does not delete saved users, clothing, or outfits.
+
+After pulling changes, run `npm install` again if dependencies changed.
+Restart the website container to load updated server code:
+
+```sh
+docker compose restart web
+```
+
+Existing database tables are not automatically updated when
+`src/init_data/create.sql` changes. Schema changes may require a separate
+database migration.
+
 
 
 <!-- 6. How to run the tests -->
 
 
 <!-- 7. Link to the deployed application -->
+
+### Deployed Application
+
+[Naxos](https://group5-fashionagent.onrender.com/)
+
+The deployed website currently requires a manual rebuild after changes
+are pushed. Coordinate with Jaden to deploy the latest version.
